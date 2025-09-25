@@ -19,19 +19,15 @@ import (
 	"github.com/idursun/jjui/internal/ui/bookmarks"
 	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/context"
-	customcommands "github.com/idursun/jjui/internal/ui/custom_commands"
 	"github.com/idursun/jjui/internal/ui/diff"
 	"github.com/idursun/jjui/internal/ui/exec_process"
-	"github.com/idursun/jjui/internal/ui/git"
 	"github.com/idursun/jjui/internal/ui/helppage"
 	"github.com/idursun/jjui/internal/ui/leader"
 	"github.com/idursun/jjui/internal/ui/oplog"
 	"github.com/idursun/jjui/internal/ui/preview"
-	"github.com/idursun/jjui/internal/ui/redo"
 	"github.com/idursun/jjui/internal/ui/revisions"
 	"github.com/idursun/jjui/internal/ui/revset"
 	"github.com/idursun/jjui/internal/ui/status"
-	"github.com/idursun/jjui/internal/ui/undo"
 )
 
 type Model struct {
@@ -202,17 +198,13 @@ steps = [
 			return m, tea.Batch(cmds...)
 		case key.Matches(msg, m.keyMap.Quit) && m.isSafeToQuit():
 			return m, tea.Quit
-		case key.Matches(msg, m.keyMap.Git.Mode) && m.revisions.InNormalMode():
-			m.stacked = git.NewModel(m.context, m.revisions.SelectedRevisions(), m.Width, m.Height)
-			return m, m.stacked.Init()
-		case key.Matches(msg, m.keyMap.Undo) && m.revisions.InNormalMode():
-			m.stacked = undo.NewModel(m.context)
-			cmds = append(cmds, m.stacked.Init())
-			return m, tea.Batch(cmds...)
-		case key.Matches(msg, m.keyMap.Redo) && m.revisions.InNormalMode():
-			m.stacked = redo.NewModel(m.context)
-			cmds = append(cmds, m.stacked.Init())
-			return m, tea.Batch(cmds...)
+		//case key.Matches(msg, m.keyMap.Git.Mode) && m.revisions.InNormalMode():
+		//	m.stacked = git.NewModel(m.context, m.revisions.SelectedRevision(), m.Width, m.Height)
+		//	return m, m.stacked.Init()
+		//case key.Matches(msg, m.keyMap.Undo) && m.revisions.InNormalMode():
+		//	m.stacked = undo.NewModel(m.context)
+		//	cmds = append(cmds, m.stacked.Init())
+		//	return m, tea.Batch(cmds...)
 		case key.Matches(msg, m.keyMap.Bookmark.Mode) && m.revisions.InNormalMode():
 			changeIds := m.revisions.GetCommitIds()
 			m.stacked = bookmarks.NewModel(m.context, m.revisions.SelectedRevision(), changeIds, m.Width, m.Height)
@@ -237,10 +229,10 @@ steps = [
 		case key.Matches(msg, m.keyMap.Preview.Shrink) && m.previewModel.Visible():
 			m.previewModel.Shrink()
 			return m, tea.Batch(cmds...)
-		case key.Matches(msg, m.keyMap.CustomCommands):
-			m.stacked = customcommands.NewModel(m.context, m.Width, m.Height)
-			cmds = append(cmds, m.stacked.Init())
-			return m, tea.Batch(cmds...)
+		//case key.Matches(msg, m.keyMap.CustomCommands):
+		//	m.stacked = customcommands.NewModel(m.context, m.Width, m.Height)
+		//	cmds = append(cmds, m.stacked.Init())
+		//	return m, tea.Batch(cmds...)
 		case key.Matches(msg, m.keyMap.Leader):
 			m.leader = leader.New(m.context)
 			cmds = append(cmds, leader.InitCmd)
