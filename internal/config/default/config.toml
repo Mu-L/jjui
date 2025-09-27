@@ -205,6 +205,7 @@ limit = 0
   "+" = "revisions.append_current_as_ancestor"
   "ctrl+d"  = "diff_until_here"
   "p" = "toggle preview"
+  "?" = "open help"
 [bindings.oplog]
   "k" = "oplog.up"
   "j" = "oplog.down"
@@ -276,3 +277,5 @@ limit = 0
   "f" = "git.fetch"
   "enter" = "git.apply"
   "esc" = "close git"
+[bindings.help]
+  "esc" = "close help"
