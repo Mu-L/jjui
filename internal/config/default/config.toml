@@ -240,6 +240,19 @@ limit = 0
     [actions."toggle preview"]
     next = [{ id = "preview.update", revision = "$commit_id" }]
 
+    [actions."status.exec_jj"]
+    id = "status.exec_jj"
+    next = ["switch status"]
+
+    [actions."status.accept"]
+    next = ["switch revisions"]
+
+    [actions."status.cancel"]
+    next = ["switch revisions"]
+
+    [actions."revisions.find_files"]
+    next = ["switch status"]
+
     [actions."revisions.append_current_as_ancestor"]
     id = "revset.set"
     args = { "revset" = "$revset | ancestors($change_id, 2)" }
@@ -347,6 +360,14 @@ limit = 0
         { on = "ctrl+d", do = "diff_from_here" },
         { on = "p", do = "toggle preview" },
         { on = "?", do = "open help" },
+        { on = ":", do = "status.exec_jj" },
+        { on = "$", do = "status.exec_sh" },
+        { on = "/", do = "quick_search" },
+        { on = "ctrl+t", do = "revisions.find_files" },
+    ]
+    status = [
+        { on = "enter", do = "status.accept"},
+        { on = "esc", do = "status.cancel" },
     ]
     oplog = [
         { on = "j", do = "oplog.down" },

@@ -14,4 +14,5 @@ const (
 	ScopeBookmarks Scope = "bookmarks"
 	ScopeGit       Scope = "git"
 	ScopeHelp      Scope = "help"
+	ScopeStatus    Scope = "status"
 )
