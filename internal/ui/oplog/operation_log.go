@@ -54,7 +54,7 @@ func (m *Model) Read(value string) string {
 	return ""
 }
 
-func (m *Model) GetActionMap() map[string]actions.Action {
+func (m *Model) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("oplog")
 }
 

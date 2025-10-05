@@ -46,7 +46,7 @@ type Operation struct {
 	styles   styles
 }
 
-func (o *Operation) GetActionMap() map[string]actions.Action {
+func (o *Operation) GetActionMap() actions.ActionMap {
 	if o.mode == restoreMode {
 		return config.Current.GetBindings("evolog.restore")
 	}

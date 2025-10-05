@@ -24,7 +24,7 @@ type Operation struct {
 	context *context.MainContext
 }
 
-func (a *Operation) GetActionMap() map[string]actions.Action {
+func (a *Operation) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("abandon")
 }
 

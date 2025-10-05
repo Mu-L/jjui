@@ -33,7 +33,7 @@ type Model struct {
 	distanceMap map[string]int
 }
 
-func (m *Model) GetActionMap() map[string]actions.Action {
+func (m *Model) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("bookmarks")
 }
 

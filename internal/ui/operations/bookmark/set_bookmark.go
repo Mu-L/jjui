@@ -24,7 +24,7 @@ type SetBookmarkOperation struct {
 	name     textinput.Model
 }
 
-func (s *SetBookmarkOperation) GetActionMap() map[string]actions.Action {
+func (s *SetBookmarkOperation) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("set_bookmark")
 }
 

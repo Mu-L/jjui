@@ -20,7 +20,7 @@ type Model struct {
 	context      *context.MainContext
 }
 
-func (m Model) GetActionMap() map[string]actions.Action {
+func (m Model) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("undo")
 }
 

@@ -30,7 +30,7 @@ type Operation struct {
 	styles      styles
 }
 
-func (s *Operation) GetActionMap() map[string]actions.Action {
+func (s *Operation) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("squash")
 }
 

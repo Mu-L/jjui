@@ -58,7 +58,7 @@ var actionMap = map[string]actions.Action{
 	}},
 }
 
-func (m *Model) GetActionMap() map[string]actions.Action {
+func (m *Model) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("revset")
 }
 

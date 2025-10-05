@@ -24,7 +24,7 @@ type Operation struct {
 	revision string
 }
 
-func (o Operation) GetActionMap() map[string]actions.Action {
+func (o Operation) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("inline_describe")
 }
 

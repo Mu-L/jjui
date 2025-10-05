@@ -10,7 +10,7 @@ import (
 )
 
 type IHasActionMap interface {
-	GetActionMap() map[string]actions.Action
+	GetActionMap() actions.ActionMap
 }
 
 type Waiter struct {
@@ -122,8 +122,8 @@ func (r *Router) Update(msg tea.Msg) (*Router, tea.Cmd) {
 		if currentView, ok := r.Views[r.Scope]; ok {
 			if hasActionMap, ok := currentView.(IHasActionMap); ok {
 				actionMap := hasActionMap.GetActionMap()
-				if action, ok := actionMap[msg.String()]; ok {
-					return r, actions.InvokeAction(action)
+				if action, ok := actionMap.Get(msg.String()); ok {
+					return r, actions.InvokeAction(action.Do)
 				}
 			}
 			r.Views[r.Scope], cmd = r.Views[r.Scope].Update(msg)

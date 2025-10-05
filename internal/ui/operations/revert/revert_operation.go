@@ -56,7 +56,7 @@ type Operation struct {
 	styles         styles
 }
 
-func (r *Operation) GetActionMap() map[string]actions.Action {
+func (r *Operation) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("revert")
 }
 

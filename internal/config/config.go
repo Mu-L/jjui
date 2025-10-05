@@ -26,21 +26,21 @@ type Config struct {
 	Graph     GraphConfig                  `toml:"graph"`
 	Limit     int                          `toml:"limit"`
 	Actions   map[string]actions.Action    `toml:"actions"`
-	Bindings  map[string]map[string]string `toml:"bindings"`
+	Bindings  map[string]actions.ActionMap `toml:"bindings"`
 }
 
-func (c *Config) GetBindings(scope string) map[string]actions.Action {
-	actionMap := make(map[string]actions.Action)
+func (c *Config) GetBindings(scope string) actions.ActionMap {
 	if existing, ok := c.Bindings[scope]; ok {
-		for k, actionId := range existing {
+		for i := range existing.Bindings {
+			binding := &existing.Bindings[i]
+			actionId := binding.Do.Id
 			if overridden, ok := c.Actions[actionId]; ok {
-				actionMap[k] = overridden
-			} else {
-				actionMap[k] = actions.Action{Id: actionId}
+				binding.Do = overridden
 			}
 		}
+		return existing
 	}
-	return actionMap
+	return actions.ActionMap{}
 }
 
 type Color struct {
