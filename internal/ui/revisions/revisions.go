@@ -457,6 +457,14 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 				return m, m.requestMoreRows(m.tag.Load())
 			}
 			return m, nil
+		case "revisions.file_search":
+			rev := m.SelectedRevision()
+			if rev == nil {
+				// noop if current revset does not exist (#264)
+				return m, nil
+			}
+			out, _ := m.context.RunCommandImmediate(jj.FilesInRevision(rev))
+			return m, common.FileSearch(m.context.CurrentRevset, false, rev, out)
 		}
 	case common.QuickSearchMsg:
 		m.quickSearch = string(msg)

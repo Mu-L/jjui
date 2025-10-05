@@ -118,8 +118,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	nm.router, cmd = nm.router.Update(msg)
 	cmds = append(cmds, cmd)
 
-	nm.status, cmd = nm.status.Update(msg)
-	cmds = append(cmds, cmd)
+	//nm.status, cmd = nm.status.Update(msg)
+	//cmds = append(cmds, cmd)
 
 	nm.flash, cmd = nm.flash.Update(msg)
 	cmds = append(cmds, cmd)
@@ -384,6 +384,7 @@ func New(c *context.MainContext) tea.Model {
 	c.Router.Views = map[view.Scope]tea.Model{
 		view.ScopeRevisions: revisionsModel,
 		view.ScopeRevset:    revsetModel,
+		view.ScopeStatus:    statusModel,
 	}
 	m := Model{
 		Sizeable:  &common.Sizeable{Width: 0, Height: 0},
@@ -391,7 +392,7 @@ func New(c *context.MainContext) tea.Model {
 		keyMap:    config.Current.GetKeyMap(),
 		state:     common.Loading,
 		revisions: revisionsModel,
-		status:    &statusModel,
+		status:    statusModel,
 		flash:     flash.New(c),
 		router:    c.Router,
 	}

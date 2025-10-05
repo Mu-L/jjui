@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/idursun/jjui/internal/config"
 	"github.com/idursun/jjui/internal/ui/actions"
@@ -22,8 +21,6 @@ import (
 	"github.com/idursun/jjui/internal/ui/fuzzy_search"
 )
 
-var accept = key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "accept"))
-
 type commandStatus int
 
 const (
@@ -32,6 +29,9 @@ const (
 	commandCompleted
 	commandFailed
 )
+
+var _ tea.Model = (*Model)(nil)
+var _ view.IHasActionMap = (*Model)(nil)
 
 type Model struct {
 	context    *context.MainContext
@@ -47,6 +47,10 @@ type Model struct {
 	history    map[string][]string
 	fuzzy      fuzzy_search.Model
 	styles     styles
+}
+
+func (m *Model) GetActionMap() actions.ActionMap {
+	return config.Current.GetBindings("status")
 }
 
 type styles struct {
@@ -98,9 +102,59 @@ func (m *Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
-	km := config.Current.GetKeyMap()
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case actions.InvokeActionMsg:
+		switch msg.Action.Id {
+		case "status.exec_jj", "status.exec_shell":
+			mode := common.ExecJJ
+			if msg.Action.Id == "status.exec_jj" {
+				mode = common.ExecShell
+			}
+			m.mode = "exec " + mode.Mode
+			m.input.Prompt = mode.Prompt
+			m.loadEditingSuggestions()
+
+			m.fuzzy, m.editStatus = fuzzy_input.NewModel(&m.input, m.input.AvailableSuggestions())
+			return m, tea.Batch(m.fuzzy.Init(), m.input.Focus())
+		case "status.quick_search":
+			m.editStatus = emptyEditStatus
+			m.mode = "search"
+			m.input.Prompt = "> "
+			m.loadEditingSuggestions()
+			return m, m.input.Focus()
+		case "status.accept":
+			editMode := m.mode
+			input := m.input.Value()
+			prompt := m.input.Prompt
+			fuzzy := m.fuzzy
+			m.saveEditingSuggestions()
+
+			m.fuzzy = nil
+			m.command = ""
+			m.editStatus = nil
+			m.mode = ""
+			m.input.Reset()
+
+			switch {
+			case strings.HasSuffix(editMode, "file"):
+				_, cmd := fuzzy.Update(msg)
+				return m, cmd
+			case strings.HasPrefix(editMode, "exec"):
+				return m, func() tea.Msg { return exec_process.ExecMsgFromLine(prompt, input) }
+			}
+			return m, func() tea.Msg { return common.QuickSearchMsg(input) }
+		case "status.cancel":
+			var cmd tea.Cmd
+			if m.fuzzy != nil {
+				_, cmd = m.fuzzy.Update(msg)
+			}
+
+			m.fuzzy = nil
+			m.editStatus = nil
+			m.input.Reset()
+			return m, cmd
+		}
 	case clearMsg:
 		if m.command == string(msg) {
 			m.command = ""
@@ -128,66 +182,14 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 		m.fuzzy, m.editStatus = fuzzy_files.NewModel(msg)
 		return m, tea.Batch(m.fuzzy.Init(), m.input.Focus())
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, km.Cancel) && m.IsFocused():
+		if m.IsFocused() {
 			var cmd tea.Cmd
+			m.input, cmd = m.input.Update(msg)
 			if m.fuzzy != nil {
-				_, cmd = m.fuzzy.Update(msg)
+				cmd = tea.Batch(cmd, fuzzy_search.Search(m.input.Value(), msg))
 			}
-
-			m.fuzzy = nil
-			m.editStatus = nil
-			m.input.Reset()
 			return m, cmd
-		case key.Matches(msg, accept) && m.IsFocused():
-			editMode := m.mode
-			input := m.input.Value()
-			prompt := m.input.Prompt
-			fuzzy := m.fuzzy
-			m.saveEditingSuggestions()
-
-			m.fuzzy = nil
-			m.command = ""
-			m.editStatus = nil
-			m.mode = ""
-			m.input.Reset()
-
-			switch {
-			case strings.HasSuffix(editMode, "file"):
-				_, cmd := fuzzy.Update(msg)
-				return m, cmd
-			case strings.HasPrefix(editMode, "exec"):
-				return m, func() tea.Msg { return exec_process.ExecMsgFromLine(prompt, input) }
-			}
-			return m, func() tea.Msg { return common.QuickSearchMsg(input) }
-		case key.Matches(msg, km.ExecJJ, km.ExecShell) && !m.IsFocused():
-			mode := common.ExecJJ
-			if key.Matches(msg, km.ExecShell) {
-				mode = common.ExecShell
-			}
-			m.mode = "exec " + mode.Mode
-			m.input.Prompt = mode.Prompt
-			m.loadEditingSuggestions()
-
-			m.fuzzy, m.editStatus = fuzzy_input.NewModel(&m.input, m.input.AvailableSuggestions())
-			return m, tea.Batch(m.fuzzy.Init(), m.input.Focus())
-		case key.Matches(msg, km.QuickSearch) && !m.IsFocused():
-			m.editStatus = emptyEditStatus
-			m.mode = "search"
-			m.input.Prompt = "> "
-			m.loadEditingSuggestions()
-			return m, m.input.Focus()
-		default:
-			if m.IsFocused() {
-				var cmd tea.Cmd
-				m.input, cmd = m.input.Update(msg)
-				if m.fuzzy != nil {
-					cmd = tea.Batch(cmd, fuzzy_search.Search(m.input.Value(), msg))
-				}
-				return m, cmd
-			}
 		}
-		return m, nil
 	default:
 		var cmd tea.Cmd
 		if m.status == commandRunning {
@@ -198,6 +200,7 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 		}
 		return m, cmd
 	}
+	return m, nil
 }
 
 func (m *Model) saveEditingSuggestions() {
@@ -213,7 +216,7 @@ func (m *Model) loadEditingSuggestions() {
 	h := m.context.Histories.GetHistory(config.HistoryKey(m.mode), true)
 	history := h.Entries()
 	m.input.ShowSuggestions = true
-	m.input.SetSuggestions([]string(history))
+	m.input.SetSuggestions(history)
 }
 
 func (m *Model) View() string {
@@ -285,7 +288,7 @@ func (m *Model) actionMapView(actionMap actions.ActionMap) string {
 	return strings.Join(entries, m.styles.dimmed.Render(" • "))
 }
 
-func New(context *context.MainContext) Model {
+func New(context *context.MainContext) *Model {
 	styles := styles{
 		shortcut: common.DefaultPalette.Get("status shortcut"),
 		dimmed:   common.DefaultPalette.Get("status dimmed"),
@@ -303,7 +306,7 @@ func New(context *context.MainContext) Model {
 	t.CompletionStyle = styles.dimmed
 	t.PlaceholderStyle = styles.dimmed
 
-	return Model{
+	return &Model{
 		context: context,
 		spinner: s,
 		command: "",
