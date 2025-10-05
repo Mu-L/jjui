@@ -6,29 +6,28 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/idursun/jjui/internal/config"
 	"github.com/idursun/jjui/internal/ui/actions"
-	"github.com/idursun/jjui/internal/ui/context"
 )
 
 var _ tea.Model = (*model)(nil)
 var _ IHasActionMap = (*model)(nil)
 
 type model struct {
-	items   []string
-	current int
-	scope   string
-	context *context.MainContext
+	items         []string
+	current       int
+	scope         string
+	setVariableFn func(name string, value string)
 }
 
 func (m model) GetActionMap() map[string]actions.Action {
 	return config.Current.GetBindings(m.scope)
 }
 
-func NewSimpleList(ctx *context.MainContext, scope string, items []string) tea.Model {
+func NewSimpleList(setVariableFn func(name, value string), scope string, items []string) tea.Model {
 	return model{
-		context: ctx,
-		scope:   scope,
-		items:   items,
-		current: 0,
+		setVariableFn: setVariableFn,
+		scope:         scope,
+		items:         items,
+		current:       0,
 	}
 }
 
@@ -51,7 +50,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		case "list.select":
-			m.context.Set("$selected", m.items[m.current])
+			m.setVariableFn("$selected", m.items[m.current])
 			return m, nil
 		}
 	}

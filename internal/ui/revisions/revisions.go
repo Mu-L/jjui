@@ -77,25 +77,24 @@ type Model struct {
 	textStyle        lipgloss.Style
 	dimmedStyle      lipgloss.Style
 	selectedStyle    lipgloss.Style
-	router           view.Router
 	checkedRevisions map[string]bool
 }
 
 func (m *Model) Name() string {
-	if len(m.router.Views) > 0 {
-		if status, ok := m.router.Views[m.router.Scope].(view.IStatus); ok {
-			return status.Name()
-		}
-	}
+	//if len(m.context.Router.Views) > 0 {
+	//	if status, ok := m.context.Router.Views[m.context.Router.Scope].(view.IStatus); ok {
+	//		return status.Name()
+	//	}
+	//}
 	return "revisions"
 }
 
 func (m *Model) GetActionMap() map[string]actions.Action {
-	if len(m.router.Views) > 0 {
-		if op, ok := m.router.Views[m.router.Scope].(view.IHasActionMap); ok {
-			return op.GetActionMap()
-		}
-	}
+	//if len(m.context.Router.Views) > 0 {
+	//	if op, ok := m.context.Router.Views[m.context.Router.Scope].(view.IHasActionMap); ok {
+	//		return op.GetActionMap()
+	//	}
+	//}
 
 	return config.Current.GetBindings("revisions")
 }
@@ -119,7 +118,8 @@ func (m *Model) Read(value string) string {
 			return current.CommitId
 		}
 	}
-	return m.router.Read(value)
+	//return m.context.Router.Read(value)
+	return ""
 }
 
 func (m *Model) Cursor() int {
@@ -129,7 +129,7 @@ func (m *Model) Cursor() int {
 func (m *Model) SetCursor(index int) {
 	if index >= 0 && index < len(m.rows) {
 		m.cursor = index
-		m.context.ContinueAction("@revisions.select")
+		m.context.Router.ContinueAction("@revisions.select")
 	}
 }
 
@@ -154,8 +154,8 @@ func (m *Model) GetItemRenderer(index int) list.IItemRenderer {
 	isHighlighted := index == m.cursor
 
 	var op tea.Model
-	if len(m.router.Views) > 0 {
-		op = m.router.Views[m.router.Scope]
+	if len(m.context.Router.Views) > 0 {
+		op = m.context.Router.Views[m.context.Router.Scope]
 		if op, ok := op.(operations.Operation); ok {
 			before = op.Render(row.Commit, operations.RenderPositionBefore)
 			after = op.Render(row.Commit, operations.RenderPositionAfter)
@@ -231,11 +231,11 @@ type appendRowsBatchMsg struct {
 }
 
 func (m *Model) ShortHelp() []key.Binding {
-	if len(m.router.Views) > 0 {
-		if status, ok := m.router.Views[m.router.Scope].(view.IStatus); ok {
-			return status.ShortHelp()
-		}
-	}
+	//if len(m.context.Router.Views) > 0 {
+	//	if status, ok := m.context.Router.Views[m.context.Router.Scope].(view.IStatus); ok {
+	//		return status.ShortHelp()
+	//	}
+	//}
 
 	return []key.Binding{
 		m.keymap.Up,
@@ -256,8 +256,8 @@ func (m *Model) ShortHelp() []key.Binding {
 }
 
 func (m *Model) FullHelp() [][]key.Binding {
-	if len(m.router.Views) > 0 {
-		op := m.router.Views[m.router.Scope]
+	if len(m.context.Router.Views) > 0 {
+		op := m.context.Router.Views[m.context.Router.Scope]
 		if op, ok := op.(help.KeyMap); ok {
 			return op.FullHelp()
 		}
@@ -298,8 +298,8 @@ func (m *Model) Init() tea.Cmd {
 }
 
 func (m *Model) getCurrentOp() tea.Model {
-	if len(m.router.Views) > 0 {
-		return m.router.Views[m.router.Scope]
+	if len(m.context.Router.Views) > 0 {
+		return m.context.Router.Views[m.context.Router.Scope]
 	}
 	return nil
 }
@@ -338,7 +338,7 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 			return m, nil
 		case "open ace_jump":
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeAceJump, ace_jump.NewOperation(m, func(index int) parser.Row {
+			m.context.Router, cmd = m.context.Router.Open(scopeAceJump, ace_jump.NewOperation(m, func(index int) parser.Row {
 				return m.rows[index]
 			}, m.renderer.FirstRowIndex, m.renderer.LastRowIndex))
 			return m, cmd
@@ -357,11 +357,11 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 			return m, m.context.RunCommand(jj.Absorb(changeId), common.Refresh)
 		case "open abandon":
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeAbandon, abandon.NewOperation(m.context, m.SelectedRevisions()))
+			m.context.Router, cmd = m.context.Router.Open(scopeAbandon, abandon.NewOperation(m.context, m.SelectedRevisions()))
 			return m, cmd
 		case "open set_bookmark":
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeSetBookmark, bookmark.NewSetBookmarkOperation(m.context, m.SelectedRevision().GetChangeId()))
+			m.context.Router, cmd = m.context.Router.Open(scopeSetBookmark, bookmark.NewSetBookmarkOperation(m.context, m.SelectedRevision().GetChangeId()))
 			return m, cmd
 		case "revisions.find":
 			changeId := msg.Action.Get("change_id", "").(string)
@@ -403,23 +403,23 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 			return m, op.Init()
 		case "open duplicate":
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeDuplicate, duplicate.NewOperation(m.context, m.SelectedRevisions(), duplicate.TargetDestination))
+			m.context.Router, cmd = m.context.Router.Open(scopeDuplicate, duplicate.NewOperation(m.context, m.SelectedRevisions(), duplicate.TargetDestination))
 			return m, cmd
 		case "open set_parents":
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeSetParents, set_parents.NewModel(m.context, m.SelectedRevision()))
+			m.context.Router, cmd = m.context.Router.Open(scopeSetParents, set_parents.NewModel(m.context, m.SelectedRevision()))
 			return m, cmd
 		case "open evolog":
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeEvolog, evolog.NewOperation(m.context, m.SelectedRevision(), m.Width, m.Height))
+			m.context.Router, cmd = m.context.Router.Open(scopeEvolog, evolog.NewOperation(m.context, m.SelectedRevision(), m.Width, m.Height))
 			return m, cmd
 		case "open inline_describe":
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeInlineDescribe, describe.NewOperation(m.context, m.SelectedRevision().GetChangeId(), m.Width))
+			m.context.Router, cmd = m.context.Router.Open(scopeInlineDescribe, describe.NewOperation(m.context, m.SelectedRevision().GetChangeId(), m.Width))
 			return m, cmd
 		case "open revert":
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeRevert, revert.NewOperation(m.context, m.SelectedRevisions(), revert.TargetDestination))
+			m.context.Router, cmd = m.context.Router.Open(scopeRevert, revert.NewOperation(m.context, m.SelectedRevisions(), revert.TargetDestination))
 			return m, cmd
 		case "open squash":
 			selectedRevisions := m.SelectedRevisions()
@@ -432,15 +432,15 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 			}
 			files := msg.Action.Get("files", []string{}).([]string)
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeSquash, squash.NewOperation(m.context, selectedRevisions, squash.WithFiles(files)))
+			m.context.Router, cmd = m.context.Router.Open(scopeSquash, squash.NewOperation(m.context, selectedRevisions, squash.WithFiles(files)))
 			return m, cmd
 		case "open details":
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeDetails, details.NewOperation(m.context, m.SelectedRevision(), m.Height))
+			m.context.Router, cmd = m.context.Router.Open(scopeDetails, details.NewOperation(m.context, m.SelectedRevision(), m.Height))
 			return m, cmd
 		case "open rebase":
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(scopeRebase, rebase.NewOperation(m.context, m.SelectedRevisions(), rebase.SourceRevision, rebase.TargetDestination))
+			m.context.Router, cmd = m.context.Router.Open(scopeRebase, rebase.NewOperation(m.context, m.SelectedRevisions(), rebase.SourceRevision, rebase.TargetDestination))
 			return m, cmd
 		case "revisions.up":
 			if m.cursor >= 1 {
@@ -473,7 +473,7 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 		}
 		m.isLoading = true
 		var cmd tea.Cmd
-		m.router, cmd = m.router.Update(msg)
+		//m.context.Router, cmd = m.context.Router.Update(msg)
 		if config.Current.Revisions.LogBatching {
 			currentTag := m.tag.Add(1)
 			return m, tea.Batch(m.loadStreaming(m.context.CurrentRevset, msg.SelectedRevision, currentTag), cmd)
@@ -530,7 +530,7 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 			m.SetCursor(0)
 		}
 
-		m.context.ContinueAction("@refresh")
+		m.context.Router.ContinueAction("@refresh")
 		cmds := []tea.Cmd{m.highlightChanges}
 		if !m.hasMore {
 			cmds = append(cmds, func() tea.Msg {
@@ -543,10 +543,11 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 	if len(m.rows) == 0 {
 		return m, nil
 	}
-
-	var cmd tea.Cmd
-	m.router, cmd = m.router.Update(msg)
-	return m, cmd
+	//
+	//var cmd tea.Cmd
+	//m.context.Router, cmd = m.context.Router.Update(msg)
+	//return m, cmd
+	return m, nil
 }
 
 func (m *Model) highlightChanges() tea.Msg {
@@ -728,7 +729,6 @@ func (m *Model) GetCommitIds() []string {
 
 func New(c *appContext.MainContext) *Model {
 	keymap := config.Current.GetKeyMap()
-	router := view.NewRouter(c, "")
 	m := Model{
 		Sizeable:         &common.Sizeable{Width: 0, Height: 0},
 		context:          c,
@@ -740,7 +740,6 @@ func New(c *appContext.MainContext) *Model {
 		dimmedStyle:      common.DefaultPalette.Get("revisions dimmed"),
 		selectedStyle:    common.DefaultPalette.Get("revisions selected"),
 		checkedRevisions: make(map[string]bool),
-		router:           router,
 	}
 	m.renderer = newRevisionListRenderer(&m, m.Sizeable)
 	return &m

@@ -7,32 +7,69 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/idursun/jjui/internal/ui/actions"
 	"github.com/idursun/jjui/internal/ui/common"
-	"github.com/idursun/jjui/internal/ui/context"
 )
 
 type IHasActionMap interface {
 	GetActionMap() map[string]actions.Action
 }
 
+type Waiter struct {
+	waitChannel actions.WaitChannel
+	action      actions.Action
+}
+
 var _ common.ContextProvider = (*Router)(nil)
 
 type Router struct {
-	context *context.MainContext
 	scopes  []Scope
 	Scope   Scope
 	Views   map[Scope]tea.Model
+	waiters map[string][]Waiter
 }
 
-func NewRouter(ctx *context.MainContext, scope Scope) Router {
-	return Router{
-		context: ctx,
+func NewRouter(scope Scope) *Router {
+	return &Router{
+		waiters: make(map[string][]Waiter),
 		scopes:  []Scope{scope},
 		Scope:   scope,
 		Views:   make(map[Scope]tea.Model),
 	}
 }
 
-func (r Router) Init() tea.Cmd {
+func (r *Router) AddWaiter(event string, action actions.Action) tea.Cmd {
+	if r.waiters == nil {
+		r.waiters = make(map[string][]Waiter)
+	}
+	if waiters, ok := r.waiters[event]; ok {
+		for _, waiter := range waiters {
+			if waiter.action.Id == action.Id {
+				log.Println("Waiter already exists for action:", action.Id)
+				return nil
+			}
+		}
+	}
+	waitChannel, cmd := action.Wait()
+	r.waiters[event] = append(r.waiters[event], Waiter{waitChannel, action})
+	return cmd
+}
+
+func (r *Router) ContinueAction(actionId string) {
+	if len(r.waiters) > 0 {
+		for k, waiters := range r.waiters {
+			if k == actionId {
+				delete(r.waiters, k)
+
+				for _, waiter := range waiters {
+					log.Println("Continuing action:", actionId)
+					waiter.waitChannel <- actions.WaitResultContinue
+					close(waiter.waitChannel)
+				}
+			}
+		}
+	}
+}
+
+func (r *Router) Init() tea.Cmd {
 	var cmds []tea.Cmd
 	for k := range r.Views {
 		cmds = append(cmds, r.Views[k].Init())
@@ -40,7 +77,7 @@ func (r Router) Init() tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (r Router) handleAndRouteAction(action actions.InvokeActionMsg) (Router, tea.Cmd) {
+func (r *Router) handleAndRouteAction(action actions.InvokeActionMsg) (*Router, tea.Cmd) {
 	log.Println("handling action:", action.Action.Id)
 	if strings.HasPrefix(action.Action.Id, "close ") {
 		viewId := strings.TrimPrefix(action.Action.Id, "close ")
@@ -61,7 +98,7 @@ func (r Router) handleAndRouteAction(action actions.InvokeActionMsg) (Router, te
 	if strings.HasPrefix(action.Action.Id, "wait ") {
 		log.Println("Waiting for action:", action.Action.Id)
 		message := strings.TrimPrefix(action.Action.Id, "wait ")
-		return r, r.context.AddWaiter(message, action.Action)
+		return r, r.AddWaiter(message, action.Action)
 	}
 
 	var cmds []tea.Cmd
@@ -71,12 +108,12 @@ func (r Router) handleAndRouteAction(action actions.InvokeActionMsg) (Router, te
 		cmds = append(cmds, cmd)
 	}
 
-	r.context.ContinueAction(action.Action.Id)
+	r.ContinueAction(action.Action.Id)
 
 	return r, tea.Batch(cmds...)
 }
 
-func (r Router) Update(msg tea.Msg) (Router, tea.Cmd) {
+func (r *Router) Update(msg tea.Msg) (*Router, tea.Cmd) {
 	switch msg := msg.(type) {
 	case actions.InvokeActionMsg:
 		return r.handleAndRouteAction(msg)
@@ -103,11 +140,11 @@ func (r Router) Update(msg tea.Msg) (Router, tea.Cmd) {
 	return r, tea.Batch(cmds...)
 }
 
-func (r Router) View() string {
+func (r *Router) View() string {
 	return ""
 }
 
-func (r Router) Read(value string) string {
+func (r *Router) Read(value string) string {
 	for _, v := range r.Views {
 		if v, ok := v.(common.ContextProvider); ok {
 			ret := v.Read(value)
@@ -119,7 +156,7 @@ func (r Router) Read(value string) string {
 	return ""
 }
 
-func (r Router) Open(scope Scope, model tea.Model) (Router, tea.Cmd) {
+func (r *Router) Open(scope Scope, model tea.Model) (*Router, tea.Cmd) {
 	r.scopes = append(r.scopes, scope)
 	r.Scope = scope
 	r.Views[scope] = model
