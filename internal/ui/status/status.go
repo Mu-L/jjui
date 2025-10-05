@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/idursun/jjui/internal/config"
+	"github.com/idursun/jjui/internal/ui/actions"
 	"github.com/idursun/jjui/internal/ui/view"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -224,7 +225,10 @@ func (m *Model) View() string {
 	} else if m.status == commandCompleted {
 		commandStatusMark = m.styles.success.Render("✓ ")
 	} else {
-		commandStatusMark = m.helpView(m.keyMap)
+		//commandStatusMark = m.helpView(m.keyMap)
+		if actionMap := config.Current.GetBindings(m.mode); len(actionMap.Bindings) > 0 {
+			commandStatusMark = m.actionMapView(actionMap)
+		}
 		commandStatusMark = lipgloss.PlaceHorizontal(m.width, 0, commandStatusMark, lipgloss.WithWhitespaceBackground(m.styles.text.GetBackground()))
 	}
 	modeWith := max(10, len(m.mode)+2)
@@ -266,8 +270,19 @@ func (m *Model) helpView(keyMap help.KeyMap) string {
 		h := binding.Help()
 		entries = append(entries, m.styles.shortcut.Render(h.Key)+m.styles.dimmed.PaddingLeft(1).Render(h.Desc))
 	}
-	help := strings.Join(entries, m.styles.dimmed.Render(" • "))
-	return help
+	return strings.Join(entries, m.styles.dimmed.Render(" • "))
+}
+
+func (m *Model) actionMapView(actionMap actions.ActionMap) string {
+	var entries []string
+	for _, binding := range actionMap.Bindings {
+		k := binding.On[0]
+		if k == " " {
+			k = "space"
+		}
+		entries = append(entries, m.styles.shortcut.Render(k)+m.styles.dimmed.PaddingLeft(1).Render(binding.Do.Id))
+	}
+	return strings.Join(entries, m.styles.dimmed.Render(" • "))
 }
 
 func New(context *context.MainContext) Model {
