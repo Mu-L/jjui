@@ -41,7 +41,7 @@ func (m *Model) Cursor() int {
 
 func (m *Model) SetCursor(index int) {
 	m.cursor = index
-	m.context.ContinueAction("@oplog.cursor")
+	m.context.Router.ContinueAction("@oplog.cursor")
 }
 
 func (m *Model) Read(value string) string {

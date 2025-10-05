@@ -45,7 +45,7 @@ func (d *DetailsList) Cursor() int {
 
 func (d *DetailsList) SetCursor(index int) {
 	d.cursor = index
-	d.context.ContinueAction("@details.cursor")
+	d.context.Router.ContinueAction("@details.cursor")
 }
 
 func (d *DetailsList) setItems(files []*item) {

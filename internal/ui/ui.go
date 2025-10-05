@@ -34,7 +34,7 @@ import (
 
 type Model struct {
 	*common.Sizeable
-	router    view.Router
+	router    *view.Router
 	revisions *revisions.Model
 	flash     *flash.Model
 	state     common.State
@@ -63,7 +63,7 @@ func (m Model) registerAutoEvent(autoEvent string) tea.Cmd {
 	if action, ok := actions.Registry[autoEvent]; ok {
 		events := action.GetArgs("on")
 		for _, event := range events {
-			cmds = append(cmds, m.context.AddWaiter(event, action))
+			cmds = append(cmds, m.router.AddWaiter(event, action))
 		}
 		if v, ok := action.Args["interval"]; ok {
 			interval := v.(int64)
@@ -149,7 +149,9 @@ func (m Model) internalUpdate(msg tea.Msg) (Model, tea.Cmd) {
 				}
 			}
 			var cmd tea.Cmd
-			m.router, cmd = m.router.Open(view.Scope(scope), view.NewSimpleList(m.context, scope, items))
+			m.router, cmd = m.router.Open(view.Scope(scope), view.NewSimpleList(func(name, value string) {
+				m.context.Set(name, value)
+			}, scope, items))
 			return m, cmd
 		}
 
@@ -379,8 +381,7 @@ func New(c *context.MainContext) tea.Model {
 	revisionsModel := revisions.New(c)
 	statusModel := status.New(c)
 	revsetModel := revset.New(c)
-	router := view.NewRouter(c, view.ScopeRevisions)
-	router.Views = map[view.Scope]tea.Model{
+	c.Router.Views = map[view.Scope]tea.Model{
 		view.ScopeRevisions: revisionsModel,
 		view.ScopeRevset:    revsetModel,
 	}
@@ -392,10 +393,7 @@ func New(c *context.MainContext) tea.Model {
 		revisions: revisionsModel,
 		status:    &statusModel,
 		flash:     flash.New(c),
-		router:    router,
-	}
-	c.ReadFn = func(value string) string {
-		return m.router.Read(value)
+		router:    c.Router,
 	}
 	return m
 }
