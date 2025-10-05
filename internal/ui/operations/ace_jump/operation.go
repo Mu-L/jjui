@@ -32,7 +32,7 @@ type Operation struct {
 	first, last int
 }
 
-func (o *Operation) GetActionMap() map[string]actions.Action {
+func (o *Operation) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("ace_jump")
 }
 

@@ -89,7 +89,7 @@ func (m *Model) Name() string {
 	return "revisions"
 }
 
-func (m *Model) GetActionMap() map[string]actions.Action {
+func (m *Model) GetActionMap() actions.ActionMap {
 	//if len(m.context.Router.Views) > 0 {
 	//	if op, ok := m.context.Router.Views[m.context.Router.Scope].(view.IHasActionMap); ok {
 	//		return op.GetActionMap()

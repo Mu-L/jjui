@@ -18,7 +18,7 @@ type model struct {
 	setVariableFn func(name string, value string)
 }
 
-func (m model) GetActionMap() map[string]actions.Action {
+func (m model) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings(m.scope)
 }
 

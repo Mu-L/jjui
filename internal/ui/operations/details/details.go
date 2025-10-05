@@ -54,7 +54,7 @@ func (s *Operation) Read(value string) string {
 	return ""
 }
 
-func (s *Operation) GetActionMap() map[string]actions.Action {
+func (s *Operation) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("details")
 }
 

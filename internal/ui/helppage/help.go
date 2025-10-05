@@ -24,7 +24,7 @@ type Model struct {
 	styles  styles
 }
 
-func (h *Model) GetActionMap() map[string]actions.Action {
+func (h *Model) GetActionMap() actions.ActionMap {
 	return config.Current.GetBindings("help")
 }
 
