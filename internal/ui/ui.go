@@ -97,12 +97,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				args := msg.Action.GetArgs("jj")
 				output, _ := m.context.RunCommandImmediate(jj.TemplatedArgs(args, m.context.GetVariables()))
 				m.context.Set("$output", string(output))
-				if len(msg.Action.Next) > 0 {
-					next := msg.Action.Next[0]
-					next.Next = msg.Action.Next[1:]
-					return actions.InvokeActionMsg{Action: next}
-				}
-				return nil
+				return msg.Action.GetNextMsg()
 			}
 		}
 		if strings.HasPrefix(msg.Action.Id, "register ") {
