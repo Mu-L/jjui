@@ -15,4 +15,6 @@ const (
 	ScopeGit       Scope = "git"
 	ScopeHelp      Scope = "help"
 	ScopeStatus    Scope = "status"
+	ScopeExecJJ    Scope = "exec_jj"
+	ScopeExecSh    Scope = "exec_sh"
 )

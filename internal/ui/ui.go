@@ -181,6 +181,14 @@ func (m Model) internalUpdate(msg tea.Msg) (Model, tea.Cmd) {
 			var cmd tea.Cmd
 			m.router, cmd = m.router.Open(view.ScopeHelp, helppage.New(m.context))
 			return m, cmd
+		case "open exec_jj":
+			var cmd tea.Cmd
+			m.router, cmd = m.router.Open(view.ScopeExecJJ, exec_process.NewModel(m.context, view.ScopeExecJJ))
+			return m, cmd
+		case "open exec_sh":
+			var cmd tea.Cmd
+			m.router, cmd = m.router.Open(view.ScopeExecSh, exec_process.NewModel(m.context, view.ScopeExecSh))
+			return m, cmd
 		case "toggle preview":
 			if m.router.Views[view.ScopePreview] != nil {
 				delete(m.router.Views, view.ScopePreview)
@@ -270,7 +278,16 @@ func (m Model) updateStatus() {
 func (m Model) View() string {
 	m.updateStatus()
 	//footer := fmt.Sprintf("waiters: %d channels: %d", 0, actions.ChannelCount.Load())
-	footer := m.status.View()
+	var statusModel tea.Model
+	if v, ok := m.router.Views[view.ScopeExecSh]; ok {
+		statusModel = v
+	} else if v, ok := m.router.Views[view.ScopeExecJJ]; ok {
+		statusModel = v
+	} else {
+		statusModel = m.status
+	}
+
+	footer := statusModel.View()
 	footerHeight := lipgloss.Height(footer)
 
 	if diffView, ok := m.router.Views[view.ScopeDiff]; ok {
@@ -339,11 +356,13 @@ func (m Model) View() string {
 		mw, mh := lipgloss.Size(flashMessageView)
 		full = screen.Stacked(full, flashMessageView, m.Width-mw, m.Height-mh-1)
 	}
-	statusFuzzyView := m.status.FuzzyView()
-	if statusFuzzyView != "" {
-		_, mh := lipgloss.Size(statusFuzzyView)
-		full = screen.Stacked(full, statusFuzzyView, 0, m.Height-mh-1)
-	}
+	//if v, ok := m.router.Views[view.ScopeExecJJ]; ok {
+	//	statusView := v.View()
+	//	if statusView != "" {
+	//		_, mh := lipgloss.Size(statusView)
+	//		full = screen.Stacked(full, statusView, 0, m.Height-mh-1)
+	//	}
+	//}
 	return full
 }
 
