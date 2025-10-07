@@ -253,6 +253,12 @@ limit = 0
     [actions."revisions.find_files"]
     next = ["switch status"]
 
+    [actions."exec_jj.accept"]
+    next = ["close exec_jj", "refresh"]
+
+    [actions."exec_sh.accept"]
+    next = ["close exec_sh", "refresh"]
+
     [actions."revisions.append_current_as_ancestor"]
     id = "revset.set"
     args = { "revset" = "$revset | ancestors($change_id, 2)" }
@@ -360,8 +366,8 @@ limit = 0
         { on = "ctrl+d", do = "diff_from_here" },
         { on = "p", do = "toggle preview" },
         { on = "?", do = "open help" },
-        { on = ":", do = "status.exec_jj" },
-        { on = "$", do = "status.exec_sh" },
+        { on = ":", do = "open exec_jj" },
+        { on = "$", do = "open exec_sh" },
         { on = "/", do = "quick_search" },
         { on = "ctrl+t", do = "revisions.find_files" },
     ]
@@ -508,4 +514,12 @@ limit = 0
         { on = "enter", do = "rebase.apply" },
         { on = "alt+enter", do = "rebase.force_apply" },
         { on = "esc", do = "close rebase" },
+    ]
+    exec_sh = [
+        { on = "esc", do = "close exec_sh" },
+        { on = "enter", do = "exec_sh.accept" },
+    ]
+    exec_jj = [
+        { on = "esc", do = "close exec_jj" },
+        { on = "enter", do = "exec_jj.accept" },
     ]
