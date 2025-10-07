@@ -156,117 +156,151 @@ limit = 0
     #   next = ["refresh", "register #auto-refresh"]
 
     [actions."revset.cancel"]
+    desc = "Cancel the current revset operation"
     next = ["switch revisions"]
 
     [actions."revset.accept"]
+    desc = "Apply the current revset"
     next = ["switch revisions"]
 
     [actions."revset.edit"]
+    desc = "Edit the current revset"
     args = { clear = true }
     next = ["switch revset"]
 
     [actions."revisions.toggle_select"]
+    desc = "Toggle selection of current revision"
     next = ["revisions.down"]
 
     [actions."revisions.jump_to_working_copy"]
+    desc = "Jump to working copy"
     id = "revisions.find"
     change_id = "@"
 
     [actions."inline_describe.accept"]
+    desc = "Accept the current description"
     next = ["close inline_describe"]
 
     [actions."oplog.restore"]
+    desc = "Restore operation from the log"
     next = ["close oplog"]
 
     [actions."oplog.close"]
+    desc = "Close operation log view"
     next = ["close oplog"]
 
     [actions."oplog.diff"]
+    desc = "Show diff for the current operation"
     next = ["open diff"]
 
     [actions."set_parents.apply"]
+    desc = "Apply parent changes"
     next = ["close set_parents"]
 
     [actions."abandon.apply"]
+    desc = "Apply abandon changes"
     id = "abandon.apply"
     next = ["refresh", "close abandon"]
 
     [actions."abandon.force_apply"]
+    desc = "Force apply abandon changes"
     id = "abandon.force_apply"
     next = ["close abandon"]
 
     [actions."squash.apply"]
+    desc = "Apply squash changes"
     id = "squash.apply"
     next = ["close squash"]
 
     [actions."squash.force_apply"]
+    desc = "Force apply squash changes"
     id = "squash.apply"
     force = true
     next = ["close squash"]
 
     [actions."rebase.apply"]
+    desc = "Apply rebase changes"
     next = ["close rebase", "refresh"]
 
     [actions."rebase.force_apply"]
+    desc = "Force apply rebase changes"
     id = "rebase.apply"
     force = true
     next = ["close rebase", "refresh"]
 
     [actions."undo.close"]
+    desc = "Close undo dialog"
     next = ["close undo"]
 
     [actions."undo.accept"]
+    desc = "Accept undo operation"
     next = ["close undo"]
 
     [actions."bookmark_list.accept"]
+    desc = "Accept selected bookmark"
     next = ["list.select", "close list bookmark_list"]
 
     [actions."bookmarks.apply"]
+    desc = "Apply bookmark changes"
     next = ["close bookmarks"]
 
     [actions."evolog.restore.apply"]
+    desc = "Apply evolution log restore operation"
     id = "evolog.apply"
     next = ["close evolog", "refresh"]
 
     [actions."git.apply"]
+    desc = "Apply git operation"
     next = ["close git"]
 
     [actions."revert.apply"]
+    desc = "Apply revert operation"
     next = ["close revert"]
 
     [actions."details.split.apply"]
+    desc = "Apply split operation from details view"
     next = ["close details", "refresh"]
 
     [actions."toggle preview"]
+    desc = "Toggle preview panel"
     next = [{ id = "preview.update", revision = "$commit_id" }]
 
     [actions."status.exec_jj"]
+    desc = "Execute JJ command from status view"
     id = "status.exec_jj"
     next = ["switch status"]
 
     [actions."status.accept"]
+    desc = "Accept status and switch to revisions"
     next = ["switch revisions"]
 
     [actions."status.cancel"]
+    desc = "Cancel status view and return to revisions"
     next = ["switch revisions"]
 
     [actions."revisions.find_files"]
+    desc = "Find files in the current revision"
     next = ["switch status"]
 
     [actions."exec_jj.accept"]
+    desc = "Execute JJ command and refresh"
     next = ["close exec_jj", "refresh"]
 
     [actions."exec_sh.accept"]
+    desc = "Execute shell command and refresh"
     next = ["close exec_sh", "refresh"]
 
     [actions."revisions.append_current_as_ancestor"]
+    desc = "Append current revision as ancestor to revset"
     id = "revset.set"
     args = { "revset" = "$revset | ancestors($change_id, 2)" }
 
     [actions."revisions.my_inline_describe"]
+    desc = "Open inline description editor and create new revision"
     next = ["open inline_describe", "wait close inline_describe", "revisions.new"]
 
     [actions."new_note_commit"]
+    desc = "Create a new commit with the current revision as ancestor"
     next = [
         { id = "run", args = { "jj" = ["new", "-A", "$change_id"] }, next = ["refresh"] },
         "wait @refresh",
@@ -275,6 +309,7 @@ limit = 0
     ]
 
     [actions."diff_from_here"]
+    desc = "Show diff from current revision to working copy"
     id = "open diff"
     next = [
         { id = "diff.show", args = { "jj" = ["diff", "-r", "$change_id::@"] } },
@@ -283,6 +318,7 @@ limit = 0
     ]
 
     [actions."list_bookmarks"]
+    desc = "List all bookmarks"
     jj = ["bookmark", "list"]
     next = [
         { id = "choose list bookmark_list", items = "$output" },
@@ -291,6 +327,7 @@ limit = 0
     ]
 
     [actions."show_root"]
+    desc = "Show repository root"
     jj = ["root"]
     next = [
         { id = "flash.add", message = "$output" },
@@ -300,6 +337,7 @@ limit = 0
     ]
 
     [actions."show_context_variables"]
+    desc = "Show context variables"
     id = "flash.add"
     message = "checked commit ids: $checked_commit_ids"
     next = [
@@ -307,18 +345,22 @@ limit = 0
     ]
 
     [actions."move commit down"]
+    desc = "Move the current commit down in the history"
     jj = ["rebase", "-r", "$change_id", "--insert-before", "$change_id-"]
     next = ["refresh"]
 
     [actions."move commit up"]
+    desc = "Move the current commit up in the history"
     jj = ["rebase", "-r", "$change_id", "--insert-after", "$change_id+"]
     next = ["refresh"]
 
     [actions."say hello world"]
+    desc = "Greet world"
     id = "flash.add"
     message = "Hello, world!"
 
     [actions."say hello jjui"]
+    desc = "Greet jjui"
     id = "flash.add"
     message = "Hello, jjui!"
 

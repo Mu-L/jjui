@@ -279,11 +279,8 @@ func (m *Model) helpView(keyMap help.KeyMap) string {
 func (m *Model) actionMapView(actionMap actions.ActionMap) string {
 	var entries []string
 	for _, binding := range actionMap.Bindings {
-		k := binding.On[0]
-		if k == " " {
-			k = "space"
-		}
-		entries = append(entries, m.styles.shortcut.Render(k)+m.styles.dimmed.PaddingLeft(1).Render(binding.Do.Id))
+		k := config.JoinKeys(binding.On)
+		entries = append(entries, m.styles.shortcut.Render(k)+m.styles.dimmed.PaddingLeft(1).Render(binding.Do.Desc))
 	}
 	return strings.Join(entries, m.styles.dimmed.Render(" • "))
 }

@@ -21,6 +21,7 @@ type WaitChannel chan WaitResult
 
 type Action struct {
 	Id   string         `toml:"id"`
+	Desc string         `toml:"desc,omitempty"`
 	Args map[string]any `toml:"args,omitempty"`
 	Next []Action       `toml:"next,omitempty"`
 }
@@ -32,6 +33,10 @@ func (a *Action) UnmarshalTOML(data any) error {
 	case map[string]interface{}:
 		if id, ok := value["id"]; ok {
 			a.Id = id.(string)
+		}
+
+		if desc, ok := value["desc"]; ok {
+			a.Desc = desc.(string)
 		}
 
 		if wait, ok := value["wait"]; ok {
@@ -69,7 +74,7 @@ func (a *Action) UnmarshalTOML(data any) error {
 			a.Args = make(map[string]any)
 		}
 		for k, v := range value {
-			if k != "id" && k != "next" && k != "args" && k != "wait" && k != "jj" {
+			if k != "id" && k != "next" && k != "args" && k != "wait" && k != "jj" && k != "desc" {
 				a.Args[k] = v
 			}
 		}
