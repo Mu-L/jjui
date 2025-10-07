@@ -21,10 +21,11 @@ type Waiter struct {
 var _ common.ContextProvider = (*Router)(nil)
 
 type Router struct {
-	scopes  []Scope
-	Scope   Scope
-	Views   map[Scope]tea.Model
-	waiters map[string][]Waiter
+	scopes   []Scope
+	Scope    Scope
+	Views    map[Scope]tea.Model
+	waiters  map[string][]Waiter
+	previous []string
 }
 
 func NewRouter(scope Scope) *Router {
@@ -122,7 +123,17 @@ func (r *Router) Update(msg tea.Msg) (*Router, tea.Cmd) {
 		if currentView, ok := r.Views[r.Scope]; ok {
 			if hasActionMap, ok := currentView.(IHasActionMap); ok {
 				actionMap := hasActionMap.GetActionMap()
-				if action, ok := actionMap.Get(msg.String()); ok {
+				currentKey := msg.String()
+				matches := actionMap.GetMatch(r.previous, currentKey)
+				if len(matches) > 1 {
+					r.previous = append(r.previous, currentKey)
+					return r, func() tea.Msg {
+						return common.ShowAvailableBindingMatches{Matches: matches}
+					}
+				}
+				if len(matches) == 1 {
+					action := matches[0]
+					r.previous = nil
 					return r, actions.InvokeAction(action.Do)
 				}
 			}

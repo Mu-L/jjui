@@ -314,6 +314,14 @@ limit = 0
     jj = ["rebase", "-r", "$change_id", "--insert-after", "$change_id+"]
     next = ["refresh"]
 
+    [actions."say hello world"]
+    id = "flash.add"
+    message = "Hello, world!"
+
+    [actions."say hello jjui"]
+    id = "flash.add"
+    message = "Hello, jjui!"
+
     [bindings]
     revset = [
         { on = "enter", do = "revset.accept" },
@@ -326,6 +334,8 @@ limit = 0
         { on = "esc", do = "close list bookmark_list" },
     ]
     revisions = [
+        { on = ["h", "w"], do = "say hello world" },
+        { on = ["h", "j"], do = "say hello jjui" },
         { on = "ctrl+j", do = "move commit down" },
         { on = "ctrl+k", do = "move commit up" },
         { on = "2", do = "show_root" },

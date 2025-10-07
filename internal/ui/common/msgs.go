@@ -5,6 +5,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/idursun/jjui/internal/jj"
+	"github.com/idursun/jjui/internal/ui/actions"
 )
 
 type (
@@ -44,7 +45,10 @@ type (
 		Commit       *jj.Commit
 		RawFileOut   []byte // raw output from `jj file list`
 	}
-	ShowPreview bool
+	ShowPreview                 bool
+	ShowAvailableBindingMatches struct {
+		Matches []*actions.ActionBinding
+	}
 )
 
 type State int

@@ -41,6 +41,7 @@ type Model struct {
 	status    *status.Model
 	context   *context.MainContext
 	keyMap    config.KeyMappings[key.Binding]
+	actions   []*actions.ActionBinding
 }
 
 func (m Model) Init() tea.Cmd {
@@ -89,6 +90,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.context.Set(jj.CheckedCommitIdsPlaceholder, m.router.Read(jj.CheckedCommitIdsPlaceholder))
 
 	if msg, ok := msg.(actions.InvokeActionMsg); ok {
+		// clearing the available actions since user has made a choice
+		m.actions = nil
 		if msg.Action.Id == "run" {
 			return m, func() tea.Msg {
 				args := msg.Action.GetArgs("jj")
@@ -248,6 +251,8 @@ func (m Model) internalUpdate(msg tea.Msg) (Model, tea.Cmd) {
 		m.context.CurrentRevset = string(msg)
 		//m.revsetModel.AddToHistory(m.context.CurrentRevset)
 		return m, common.Refresh
+	case common.ShowAvailableBindingMatches:
+		m.actions = msg.Matches
 	case tea.WindowSizeMsg:
 		m.Width = msg.Width
 		m.Height = msg.Height
@@ -355,6 +360,13 @@ func (m Model) View() string {
 	if flashMessageView != "" {
 		mw, mh := lipgloss.Size(flashMessageView)
 		full = screen.Stacked(full, flashMessageView, m.Width-mw, m.Height-mh-1)
+	}
+	if len(m.actions) > 0 {
+		shortcutStyle := common.DefaultPalette.Get("shortcut")
+		textStyle := common.DefaultPalette.Get("text")
+		actionsView := actions.RenderAvailableActions(m.actions, textStyle, shortcutStyle)
+		w, h := lipgloss.Size(actionsView)
+		full = screen.Stacked(full, actionsView, (m.Width-w)/2, (m.Height-h)/2)
 	}
 	//if v, ok := m.router.Views[view.ScopeExecJJ]; ok {
 	//	statusView := v.View()
