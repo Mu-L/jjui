@@ -141,7 +141,7 @@ func (ir itemRenderer) Render(w io.Writer, width int) {
 			if sr, ok := op.(operations.SegmentRenderer); ok {
 				rendered := sr.RenderSegment(style, segment, row)
 				if rendered != "" {
-					fmt.Fprint(&lw, style.Render(rendered))
+					fmt.Fprint(&lw, rendered)
 					continue
 				}
 			}
