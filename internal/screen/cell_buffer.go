@@ -9,12 +9,14 @@ import (
 )
 
 type cellBuffer struct {
-	grid [][]gridCell
+	grid           [][]gridCell
+	currentStyleId int
 }
 
 type gridCell struct {
 	Segment
-	width int
+	width   int
+	styleId int
 }
 
 var emptyCell = gridCell{
@@ -75,6 +77,10 @@ func (b *cellBuffer) merge(input []byte, offsetX, offsetY int) {
 
 	for _, st := range parsed {
 		gr := uniseg.NewGraphemes(st.Text)
+		b.currentStyleId++
+		styleId := b.currentStyleId
+		isTransparent := st.Style.GetBackground() == TransparentBg && st.Style.GetForeground() == TransparentFg
+
 		for gr.Next() {
 			cluster := gr.Str()
 			if cluster == "\n" {
@@ -111,10 +117,9 @@ func (b *cellBuffer) merge(input []byte, offsetX, offsetY int) {
 					Text:  cluster,
 					Style: st.Style,
 				},
-				width: charWidth,
+				width:   charWidth,
+				styleId: styleId,
 			}
-
-			isTransparent := st.Style.GetBackground() == TransparentBg && st.Style.GetForeground() == TransparentFg
 
 			// Ensure the grid has enough space for the current character
 			if currentLine < len(b.grid) && !isTransparent {
@@ -138,12 +143,13 @@ func (b *cellBuffer) String() string {
 	for _, line := range b.grid {
 		var lineSegments []*Segment
 		var lastSegment *Segment
+		var lastSegmentStyleId int
 		for i := 0; i < len(line); i++ {
 			c := &line[i]
 			if c.width == 0 {
 				continue
 			}
-			if lastSegment == nil || !lastSegment.StyleEqual(c.Segment) {
+			if lastSegment == nil || lastSegmentStyleId != c.styleId {
 				if lastSegment != nil {
 					lineSegments = append(lineSegments, lastSegment)
 				}
@@ -151,6 +157,7 @@ func (b *cellBuffer) String() string {
 					Text:  c.Text,
 					Style: c.Style,
 				}
+				lastSegmentStyleId = c.styleId
 			} else {
 				lastSegment.Text += c.Text
 			}

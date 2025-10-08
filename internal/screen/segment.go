@@ -18,18 +18,6 @@ func (s Segment) String() string {
 	return s.Style.Render(s.Text)
 }
 
-func (s Segment) StyleEqual(other Segment) bool {
-	return s.Style.GetForeground() == other.Style.GetForeground() &&
-		s.Style.GetBackground() == other.Style.GetBackground() &&
-		s.Style.GetBold() == other.Style.GetBold() &&
-		s.Style.GetItalic() == other.Style.GetItalic() &&
-		s.Style.GetUnderline() == other.Style.GetUnderline() &&
-		s.Style.GetStrikethrough() == other.Style.GetStrikethrough() &&
-		s.Style.GetBlink() == other.Style.GetBlink() &&
-		s.Style.GetReverse() == other.Style.GetReverse() &&
-		s.Style.GetFaint() == other.Style.GetFaint()
-}
-
 func (s Segment) FindSubstringRange(substr string) (int, int) {
 	if s.Text == "" || substr == "" || len(s.Text) < len(substr) {
 		return -1, -1
