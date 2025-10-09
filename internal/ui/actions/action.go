@@ -151,6 +151,13 @@ func (a Action) GetArgs(name string) []string {
 	return []string{}
 }
 
+func (a Action) GetDesc() string {
+	if a.Desc != "" {
+		return a.Desc
+	}
+	return a.Id
+}
+
 func InvokeAction(action Action) tea.Cmd {
 	if existing, ok := Registry[action.Id]; ok {
 		action = existing
