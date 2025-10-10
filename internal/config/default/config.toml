@@ -255,7 +255,7 @@ limit = 0
 
     [actions."undo.accept"]
     desc = "Accept undo operation"
-    next = ["close undo"]
+    next = ["refresh", "undo.close"]
 
     [actions."bookmark_list.accept"]
     desc = "Accept selected bookmark"

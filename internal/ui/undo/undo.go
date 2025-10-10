@@ -40,7 +40,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if msg, ok := msg.(actions.InvokeActionMsg); ok {
 		switch msg.Action.Id {
 		case "undo.accept":
-			return m, m.context.RunCommand(jj.Undo(), common.Refresh)
+			return m, m.context.RunCommand(jj.Undo())
 		}
 	}
 	var cmd tea.Cmd
