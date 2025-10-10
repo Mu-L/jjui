@@ -220,13 +220,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 			action := m.menu.List.SelectedItem().(item)
-			return m, m.context.RunCommand(action.args, common.Refresh, common.Close)
+			return m, m.context.RunCommand(action.args, common.Refresh)
 		case "bookmarks.cancel":
 			if m.menu.Filter != "" || m.menu.List.IsFiltered() {
 				m.menu.List.ResetFilter()
 				return m.filtered("")
 			}
-			return m, common.Close
+			return m, nil
 		}
 	case tea.KeyMsg:
 		if m.menu.List.SettingFilter() {
@@ -234,7 +234,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		for _, listItem := range m.menu.List.Items() {
 			if item, ok := listItem.(item); ok && m.menu.Filter != "" && item.key == msg.String() {
-				return m, m.context.RunCommand(jj.Args(item.args...), common.Refresh, common.Close)
+				return m, m.context.RunCommand(jj.Args(item.args...), common.Refresh)
 			}
 		}
 	case updateItemsMsg:

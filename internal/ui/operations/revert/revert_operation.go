@@ -79,11 +79,11 @@ func (r *Operation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			r.InsertStart = r.To
 		case "revert.apply":
 			if r.Target == TargetInsert {
-				return r, r.context.RunCommand(jj.RevertInsert(r.From, r.InsertStart.GetChangeId(), r.To.GetChangeId()), common.RefreshAndSelect(r.From.Last()), common.Close)
+				return r, r.context.RunCommand(jj.RevertInsert(r.From, r.InsertStart.GetChangeId(), r.To.GetChangeId()), common.RefreshAndSelect(r.From.Last()))
 			} else {
 				source := "--revisions"
 				target := targetToFlags[r.Target]
-				return r, r.context.RunCommand(jj.Revert(r.From, r.To.GetChangeId(), source, target), common.RefreshAndSelect(r.From.Last()), common.Close)
+				return r, r.context.RunCommand(jj.Revert(r.From, r.To.GetChangeId(), source, target), common.RefreshAndSelect(r.From.Last()))
 			}
 		}
 	}

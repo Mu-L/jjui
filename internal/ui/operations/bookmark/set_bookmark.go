@@ -33,7 +33,7 @@ func (s *SetBookmarkOperation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case actions.InvokeActionMsg:
 		switch msg.Action.Id {
 		case "set_bookmark.accept":
-			return s, s.context.RunCommand(jj.BookmarkSet(s.revision, s.name.Value()), common.Close, common.Refresh)
+			return s, s.context.RunCommand(jj.BookmarkSet(s.revision, s.name.Value()))
 		}
 	}
 	var cmd tea.Cmd

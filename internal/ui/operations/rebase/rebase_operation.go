@@ -104,11 +104,11 @@ func (r *Operation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			ignoreImmutable := msg.Action.Get("force", false).(bool)
 			skipEmptied := r.SkipEmptied
 			if r.Target == TargetInsert {
-				return r, r.context.RunCommand(jj.RebaseInsert(r.From, r.InsertStart.GetChangeId(), r.To.GetChangeId(), skipEmptied, ignoreImmutable), common.RefreshAndSelect(r.From.Last()), common.Close)
+				return r, r.context.RunCommand(jj.RebaseInsert(r.From, r.InsertStart.GetChangeId(), r.To.GetChangeId(), skipEmptied, ignoreImmutable), common.RefreshAndSelect(r.From.Last()))
 			} else {
 				source := sourceToFlags
 				target := targetToFlags
-				return r, r.context.RunCommand(jj.Rebase(r.From, r.To.GetChangeId(), source[r.Source], target[r.Target], skipEmptied, ignoreImmutable), common.RefreshAndSelect(r.From.Last()), common.Close)
+				return r, r.context.RunCommand(jj.Rebase(r.From, r.To.GetChangeId(), source[r.Source], target[r.Target], skipEmptied, ignoreImmutable), common.RefreshAndSelect(r.From.Last()))
 			}
 		}
 	}
