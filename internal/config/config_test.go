@@ -148,7 +148,7 @@ func TestLoad_Actions_Shorthand(t *testing.T) {
   id = "run"
   args = { "jj" = ["root"] }
   next = [
-    { choose = "simple_list", floating = "true" },
+    { id = "choose simple_list", floating = "true" },
     { wait = { close = "simple_list" } },
 	"refresh"
   ]
@@ -167,16 +167,24 @@ func TestLoad_ActionMap(t *testing.T) {
 	content := `
 [actions]
   "revset.edit" = { args = { clear = true }, next = ["switch revset"]}
-[keymap.revisions]
-  "j" = "revisions.down"
-  "k" = "revisions.up"
-  "L" = "revset.edit"
+[bindings]
+  revisions = [
+	{ on = "j" , do = "revisions.down" },
+	{ on = "k" , do = "revisions.up" },
+	{ on = "L" , do = "revisions.edit" },
+  ]
 `
 	config := &Config{}
 	err := config.Load(content)
 	assert.NoError(t, err)
-	assert.Len(t, config.Bindings["revisions"], 3)
-	assert.Equal(t, "revisions.down", config.Bindings["revisions"]["j"])
-	assert.Equal(t, "revisions.up", config.Bindings["revisions"]["k"])
-	assert.Equal(t, "revset.edit", config.Bindings["revisions"]["L"])
+	bindings := config.Bindings["revisions"]
+	assert.NotNil(t, bindings)
+	var actionBinding *actions.ActionBinding
+	actionBinding, _ = bindings.Get("j")
+	assert.NotNil(t, actionBinding)
+	assert.Equal(t, actionBinding.Do.Id, "revisions.down")
+	actionBinding, _ = bindings.Get("k")
+	assert.Equal(t, actionBinding.Do.Id, "revisions.up")
+	actionBinding, _ = bindings.Get("L")
+	assert.Equal(t, actionBinding.Do.Id, "revisions.edit")
 }
