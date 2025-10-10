@@ -547,7 +547,6 @@ limit = 0
         { on = "k", do = "evolog.up" },
         { on = "d", do = "evolog.diff" },
         { on = "r", do = "evolog.restore" },
-        { on = "enter", do = "evolog.restore.apply" },
         { on = "esc", do = "close evolog" },
     ]
     "evolog.restore" = [

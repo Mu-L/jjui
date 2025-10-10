@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/exp/teatest"
 	"github.com/idursun/jjui/internal/jj"
+	"github.com/idursun/jjui/internal/ui/actions"
 	"github.com/idursun/jjui/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,7 +18,8 @@ func Test_Push(t *testing.T) {
 
 	op := NewModel(test.NewTestContext(commandRunner), jj.NewSelectedRevisions(), 0, 0)
 	tm := teatest.NewTestModel(t, op)
-	tm.Send(tea.KeyMsg{Type: tea.KeyEnter})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "git.push"}})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "git.apply"}})
 	teatest.WaitFor(t, tm.Output(), func(bts []byte) bool {
 		return commandRunner.IsVerified()
 	})
@@ -33,10 +34,8 @@ func Test_Fetch(t *testing.T) {
 
 	op := NewModel(test.NewTestContext(commandRunner), jj.NewSelectedRevisions(), 0, 0)
 	tm := teatest.NewTestModel(t, op)
-	tm.Type("/")
-	tm.Type("fetch")
-	tm.Send(tea.KeyMsg{Type: tea.KeyEnter})
-	tm.Send(tea.KeyMsg{Type: tea.KeyEnter})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "git.fetch"}})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "git.apply"}})
 	teatest.WaitFor(t, tm.Output(), func(bts []byte) bool {
 		return commandRunner.IsVerified()
 	})
@@ -73,8 +72,7 @@ func Test_PushChange(t *testing.T) {
 	// Filter for the exact item and ensure selection is at index 0
 	tm.Type("/")
 	tm.Type("git push --change")
-	tm.Send(tea.KeyMsg{Type: tea.KeyDown}) // Ensure first item is selected
-	tm.Send(tea.KeyMsg{Type: tea.KeyEnter})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "git.apply"}})
 	teatest.WaitFor(t, tm.Output(), func(bts []byte) bool {
 		return commandRunner.IsVerified()
 	})

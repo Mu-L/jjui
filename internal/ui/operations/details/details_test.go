@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/idursun/jjui/internal/jj"
+	"github.com/idursun/jjui/internal/ui/actions"
 
 	"github.com/idursun/jjui/test"
 
@@ -48,8 +49,8 @@ func TestModel_Update_RestoresSelectedFiles(t *testing.T) {
 		return bytes.Contains(bts, []byte("file.txt"))
 	})
 
-	tm.Send(tea.KeyMsg{Type: tea.KeySpace})
-	tm.Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("r")})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "details.toggle_select"}})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "details.restore"}})
 	tm.Send(tea.KeyMsg{Type: tea.KeyEnter})
 	teatest.WaitFor(t, tm.Output(), func(bts []byte) bool {
 		return commandRunner.IsVerified()
@@ -70,8 +71,8 @@ func TestModel_Update_SplitsSelectedFiles(t *testing.T) {
 		return bytes.Contains(bts, []byte("file.txt"))
 	})
 
-	tm.Send(tea.KeyMsg{Type: tea.KeySpace})
-	tm.Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("s")})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "details.toggle_select"}})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "details.split"}})
 	tm.Send(tea.KeyMsg{Type: tea.KeyEnter})
 	teatest.WaitFor(t, tm.Output(), func(bts []byte) bool {
 		return commandRunner.IsVerified()
@@ -114,9 +115,9 @@ func TestModel_Update_HandlesMovedFiles(t *testing.T) {
 		return bytes.Contains(bts, []byte("file.go"))
 	})
 
-	tm.Send(tea.KeyMsg{Type: tea.KeySpace})
-	tm.Send(tea.KeyMsg{Type: tea.KeySpace})
-	tm.Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("r")})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "details.toggle_select"}})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "details.toggle_select"}})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "details.restore"}})
 	tm.Send(tea.KeyMsg{Type: tea.KeyEnter})
 	teatest.WaitFor(t, tm.Output(), func(bts []byte) bool {
 		return commandRunner.IsVerified()

@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/idursun/jjui/internal/jj"
+	"github.com/idursun/jjui/internal/ui/actions"
 
 	"github.com/idursun/jjui/test"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/exp/teatest"
 )
 
@@ -21,7 +21,7 @@ func TestSetBookmarkModel_Update(t *testing.T) {
 	op := NewSetBookmarkOperation(test.NewTestContext(commandRunner), "revision")
 	tm := teatest.NewTestModel(t, op)
 	tm.Type("name")
-	tm.Send(tea.KeyMsg{Type: tea.KeyEnter})
+	tm.Send(actions.InvokeActionMsg{Action: actions.Action{Id: "set_bookmark.accept"}})
 	teatest.WaitFor(t, tm.Output(), func(bts []byte) bool {
 		return commandRunner.IsVerified()
 	})

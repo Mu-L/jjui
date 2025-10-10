@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	appContext "github.com/idursun/jjui/internal/ui/context"
+	"github.com/idursun/jjui/internal/ui/view"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/idursun/jjui/internal/ui/common"
@@ -123,6 +124,6 @@ func NewTestCommandRunner(t *testing.T) *CommandRunner {
 func NewTestContext(commandRunner appContext.CommandRunner) *appContext.MainContext {
 	return &appContext.MainContext{
 		CommandRunner: commandRunner,
-		SelectedItem:  nil,
+		Router:        view.NewRouter(""),
 	}
 }

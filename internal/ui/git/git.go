@@ -109,7 +109,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.filtered(string(itemCategoryFetch))
 		case "git.apply":
 			action := m.menu.List.SelectedItem().(item)
-			return m, m.context.RunCommand(jj.Args(action.command...), common.Refresh, common.Close)
+			return m, m.context.RunCommand(jj.Args(action.command...), common.Refresh)
 		case "git.cancel":
 			if m.menu.Filter != "" || m.menu.List.IsFiltered() {
 				m.menu.List.ResetFilter()
