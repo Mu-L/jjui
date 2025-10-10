@@ -155,6 +155,9 @@ limit = 0
     #   interval = 10
     #   next = ["refresh", "register #auto-refresh"]
 
+    [actions."quit"]
+    desc = "Quit"
+
     [actions."revset.cancel"]
     desc = "Cancel the current revset operation"
     next = ["switch revisions"]
@@ -197,6 +200,37 @@ limit = 0
     desc = "Jump to working copy"
     id = "revisions.find"
     change_id = "@"
+
+    [actions."details.down"]
+    desc = "Down"
+
+    [actions."details.up"]
+    desc = "Up"
+
+    [actions."details.toggle_select"]
+    desc = "Toggle selection"
+    next = ["details.down"]
+
+    [actions."details.show_revisions_changing_file"]
+    desc = "Show revisions changing the current file"
+
+    [actions."details.split"]
+    desc = "Split"
+
+    [actions."details.squash"]
+    desc = "Squash"
+
+    [actions."details.restore"]
+    desc = "Restore"
+
+    [actions."details.absorb"]
+    desc = "Absorb"
+
+    [actions."details.diff"]
+    desc = "Diff"
+
+    [actions."close details"]
+    desc = "Close"
 
     [actions."inline_describe.accept"]
     desc = "Accept the current description"
@@ -441,12 +475,12 @@ limit = 0
         { on = "j", do = "details.down" },
         { on = "k", do = "details.up" },
         { on = " ", do = "details.toggle_select" },
+        { on = "d", do = "details.diff" },
         { on = "s", do = "details.split" },
         { on = "S", do = "details.squash" },
         { on = "r", do = "details.restore" },
         { on = "A", do = "details.absorb" },
         { on = "*", do = "details.show_revisions_changing_file" },
-        { on = "d", do = "details.diff" },
         { on = "h", do = "close details" },
         { on = "esc", do = "close details" },
         { on = "q", do = "quit" },
