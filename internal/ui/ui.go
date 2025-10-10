@@ -94,11 +94,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.actions = nil
 		if msg.Action.Id == "run" {
 			args := msg.Action.GetArgs("jj")
+			async := msg.Action.Get("async", false).(bool)
+			if async {
+				return m, m.context.RunCommand(jj.TemplatedArgs(args, m.context.GetVariables()))
+			}
+
 			interactive := msg.Action.Get("interactive", false).(bool)
 			if interactive {
 				cmd := m.context.RunInteractiveCommand(jj.TemplatedArgs(args, m.context.GetVariables()), common.Refresh)
 				return m, tea.Sequence(cmd, msg.Action.GetNextCmd())
 			}
+
 			return m, func() tea.Msg {
 				output, _ := m.context.RunCommandImmediate(jj.TemplatedArgs(args, m.context.GetVariables()))
 				m.context.Set("$output", string(output))
