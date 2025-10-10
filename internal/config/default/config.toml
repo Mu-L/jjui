@@ -128,7 +128,7 @@ limit = 0
   # revset = "zzzzzzz"               # overrides jj's revsets.log
 
     [preview]
-    revision_command = ["show", "--color", "always", "-r", "$change_id"]
+    revision_command = ["show", "--color", "always", "-r", "$commit_id"]
     oplog_command = ["op", "show", "$operation_id", "--color", "always"]
     file_command = ["diff", "--color", "always", "-r", "$change_id", "$file"]
     show_at_bottom = false
@@ -144,7 +144,7 @@ limit = 0
 
     # example auto command
     [actions."#update-preview"]
-    on = ["@refresh", "@revisions.select", "@oplog.cursor", "@details.cursor", "open details", "close details", "open oplog", "close oplog"]
+    on = ["@refresh", "@revisions.select", "@oplog.cursor", "@details.cursor", "@evolog.cursor", "open details", "close details", "open oplog", "close oplog", "open evolog", "close evolog"]
     next = ["preview.update", "register #update-preview"]
 
     [actions."#refresh"]

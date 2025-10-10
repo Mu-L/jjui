@@ -81,21 +81,10 @@ type Model struct {
 }
 
 func (m *Model) Name() string {
-	//if len(m.context.Router.Views) > 0 {
-	//	if status, ok := m.context.Router.Views[m.context.Router.Scope].(view.IStatus); ok {
-	//		return status.Name()
-	//	}
-	//}
 	return "revisions"
 }
 
 func (m *Model) GetActionMap() actions.ActionMap {
-	//if len(m.context.Router.Views) > 0 {
-	//	if op, ok := m.context.Router.Views[m.context.Router.Scope].(view.IHasActionMap); ok {
-	//		return op.GetActionMap()
-	//	}
-	//}
-
 	return config.Current.GetBindings("revisions")
 }
 
@@ -118,7 +107,6 @@ func (m *Model) Read(value string) string {
 			return current.CommitId
 		}
 	}
-	//return m.context.Router.Read(value)
 	return ""
 }
 

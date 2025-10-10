@@ -30,8 +30,10 @@ const (
 )
 
 var _ list.IList = (*Operation)(nil)
+var _ list.IListCursor = (*Operation)(nil)
 var _ operations.Operation = (*Operation)(nil)
 var _ view.IHasActionMap = (*Operation)(nil)
+var _ common.ContextProvider = (*Operation)(nil)
 
 type Operation struct {
 	*common.Sizeable
@@ -44,6 +46,28 @@ type Operation struct {
 	keyMap   config.KeyMappings[key.Binding]
 	target   *jj.Commit
 	styles   styles
+}
+
+func (o *Operation) Read(value string) string {
+	switch value {
+	case jj.CommitIdPlaceholder:
+		if selectedEvolog := o.getSelectedEvolog(); selectedEvolog != nil {
+			return selectedEvolog.CommitId
+		}
+	}
+	return ""
+}
+
+func (o *Operation) Cursor() int {
+	return o.cursor
+}
+
+func (o *Operation) SetCursor(index int) {
+	if index < 0 || index >= len(o.rows) {
+		return
+	}
+	o.cursor = index
+	o.context.Router.ContinueAction("@evolog.cursor")
 }
 
 func (o *Operation) GetActionMap() actions.ActionMap {
@@ -114,14 +138,10 @@ func (o *Operation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if msg, ok := msg.(actions.InvokeActionMsg); ok {
 		switch msg.Action.Id {
 		case "evolog.up":
-			if o.cursor > 0 {
-				o.cursor--
-			}
+			o.SetCursor(o.cursor - 1)
 			return o, nil
 		case "evolog.down":
-			if o.cursor < len(o.rows)-1 {
-				o.cursor++
-			}
+			o.SetCursor(o.cursor + 1)
 			return o, nil
 		case "evolog.restore":
 			o.mode = restoreMode
@@ -139,14 +159,17 @@ func (o *Operation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case updateEvologMsg:
 		o.rows = msg.rows
-		o.cursor = 0
+		o.SetCursor(0)
 		return o, nil
 	}
 	return o, nil
 }
 
 func (o *Operation) getSelectedEvolog() *jj.Commit {
-	return o.rows[o.cursor].Commit
+	if len(o.rows) == 0 || o.cursor < 0 || o.cursor >= len(o.rows) {
+		return nil
+	}
+	return o.rows[o.Cursor()].Commit
 }
 
 func (o *Operation) Render(commit *jj.Commit, pos operations.RenderPosition) string {
