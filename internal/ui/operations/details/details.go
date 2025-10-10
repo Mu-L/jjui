@@ -147,7 +147,7 @@ func (s *Operation) internalUpdate(msg tea.Msg) (*Operation, tea.Cmd) {
 
 		case "details.show_revisions_changing_file":
 			if current := s.current(); current != nil {
-				return s, tea.Batch(common.Close, common.UpdateRevSet(fmt.Sprintf("files(%s)", jj.EscapeFileName(current.fileName))))
+				return s, tea.Batch(common.UpdateRevSet(fmt.Sprintf("files(%s)", jj.EscapeFileName(current.fileName))))
 			}
 
 		case "details.toggle_select":

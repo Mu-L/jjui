@@ -65,7 +65,7 @@ func (r *Operation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Action.Id {
 		case "duplicate.apply":
 			target := targetToFlags[r.Target]
-			return r, r.context.RunCommand(jj.Duplicate(r.From, r.To.GetChangeId(), target), common.RefreshAndSelect(r.From.Last()), common.Close)
+			return r, r.context.RunCommand(jj.Duplicate(r.From, r.To.GetChangeId(), target), common.RefreshAndSelect(r.From.Last()))
 		case "duplicate.onto":
 			r.Target = TargetDestination
 		case "duplicate.after":

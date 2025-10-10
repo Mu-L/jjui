@@ -65,13 +65,6 @@ func (h *Model) Init() tea.Cmd {
 }
 
 func (h *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, h.keyMap.Help), key.Matches(msg, h.keyMap.Cancel):
-			return h, common.Close
-		}
-	}
 	return h, nil
 }
 

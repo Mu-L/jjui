@@ -9,9 +9,6 @@ import (
 )
 
 type (
-	CloseViewMsg struct {
-		Cancelled bool
-	}
 	ToggleHelpMsg struct{}
 	RefreshMsg    struct {
 		SelectedRevision string
@@ -58,10 +55,6 @@ const (
 	Ready
 	Error
 )
-
-func Close() tea.Msg {
-	return CloseViewMsg{}
-}
 
 func RefreshAndSelect(selectedRevision string) tea.Cmd {
 	return func() tea.Msg {

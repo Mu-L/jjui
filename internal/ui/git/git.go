@@ -123,7 +123,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		for _, listItem := range m.menu.List.Items() {
 			if item, ok := listItem.(item); ok && m.menu.Filter != "" && item.key == msg.String() {
-				return m, m.context.RunCommand(jj.Args(item.command...), common.Refresh, common.Close)
+				return m, m.context.RunCommand(jj.Args(item.command...))
 			}
 		}
 	}
