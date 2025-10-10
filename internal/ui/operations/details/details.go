@@ -91,7 +91,7 @@ func (s *Operation) internalUpdate(msg tea.Msg) (*Operation, tea.Cmd) {
 			return s, nil
 		case "details.split.apply":
 			selectedFiles := s.getSelectedFiles()
-			return s, s.context.RunInteractiveCommand(jj.Split(s.revision.GetChangeId(), selectedFiles), common.Refresh)
+			return s, s.context.RunInteractiveCommand(jj.Split(s.revision.GetChangeId(), selectedFiles, false), common.Refresh)
 		case "details.split":
 			s.selectedHint = "stays as is"
 			s.unselectedHint = "moves to the new revision"

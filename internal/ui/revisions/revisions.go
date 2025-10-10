@@ -381,7 +381,8 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 			})
 		case "revisions.split":
 			currentRevision := m.SelectedRevision().GetChangeId()
-			return m, m.context.RunInteractiveCommand(jj.Split(currentRevision, []string{}), common.Refresh)
+			parallel := msg.Action.Get("parallel", false).(bool)
+			return m, m.context.RunInteractiveCommand(jj.Split(currentRevision, []string{}, parallel), common.Refresh)
 		case "revisions.describe":
 			selections := m.SelectedRevisions()
 			return m, m.context.RunInteractiveCommand(jj.Describe(selections), common.Refresh)

@@ -65,10 +65,6 @@ func Edit(changeId string, ignoreImmutable bool) CommandArgs {
 	return args
 }
 
-func DiffEdit(changeId string) CommandArgs {
-	return []string{"diffedit", "-r", changeId}
-}
-
 func Split(revision string, files []string, parallel bool) CommandArgs {
 	args := []string{"split", "-r", revision}
 	if parallel {
