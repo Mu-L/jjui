@@ -349,12 +349,6 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 		case "revisions.edit":
 			ignoreImmutable := msg.Action.Get("ignore_immutable", false).(bool)
 			return m, m.context.RunCommand(jj.Edit(m.SelectedRevision().GetChangeId(), ignoreImmutable), common.Refresh)
-		case "revisions.diffedit":
-			changeId := m.SelectedRevision().GetChangeId()
-			return m, m.context.RunInteractiveCommand(jj.DiffEdit(changeId), common.Refresh)
-		case "revisions.absorb":
-			changeId := m.SelectedRevision().GetChangeId()
-			return m, m.context.RunCommand(jj.Absorb(changeId), common.Refresh)
 		case "open abandon":
 			var cmd tea.Cmd
 			m.context.Router, cmd = m.context.Router.Open(scopeAbandon, abandon.NewOperation(m.context, m.SelectedRevisions()))
