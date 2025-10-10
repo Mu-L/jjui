@@ -172,6 +172,21 @@ limit = 0
     desc = "Toggle selection of current revision"
     next = ["revisions.down"]
 
+    [actions."revisions.find_files"]
+    desc = "Find files in the current revision"
+    next = ["switch status"]
+
+    [actions."revisions.diffedit"]
+    id = "run"
+    desc = "Diff edit"
+    args = { "jj" = ["diffedit", "-r", "$change_id"], "interactive" = true }
+
+    [actions."revisions.absorb"]
+    desc = "Absorb changes"
+    id = "run"
+    args = { "jj" = ["absorb", "-r", "$change_id"] }
+    next = ["refresh"]
+
     [actions."revisions.jump_to_working_copy"]
     desc = "Jump to working copy"
     id = "revisions.find"
@@ -277,10 +292,6 @@ limit = 0
     [actions."status.cancel"]
     desc = "Cancel status view and return to revisions"
     next = ["switch revisions"]
-
-    [actions."revisions.find_files"]
-    desc = "Find files in the current revision"
-    next = ["switch status"]
 
     [actions."exec_jj.accept"]
     desc = "Execute JJ command and refresh"

@@ -93,8 +93,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// clearing the available actions since user has made a choice
 		m.actions = nil
 		if msg.Action.Id == "run" {
+			args := msg.Action.GetArgs("jj")
+			interactive := msg.Action.Get("interactive", false).(bool)
+			if interactive {
+				cmd := m.context.RunInteractiveCommand(jj.TemplatedArgs(args, m.context.GetVariables()), common.Refresh)
+				return m, tea.Sequence(cmd, msg.Action.GetNextCmd())
+			}
 			return m, func() tea.Msg {
-				args := msg.Action.GetArgs("jj")
 				output, _ := m.context.RunCommandImmediate(jj.TemplatedArgs(args, m.context.GetVariables()))
 				m.context.Set("$output", string(output))
 				return msg.Action.GetNextMsg()
