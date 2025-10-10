@@ -196,6 +196,11 @@ limit = 0
     args = { "jj" = ["absorb", "-r", "$change_id"] }
     next = ["refresh"]
 
+    [actions."revisions.squash"]
+    desc = "Squash"
+    id = "open squash"
+    next = ["revisions.jump_to_parent"]
+
     [actions."revisions.jump_to_working_copy"]
     desc = "Jump to working copy"
     id = "revisions.find"
@@ -353,7 +358,7 @@ limit = 0
     [actions."new_note_commit"]
     desc = "Create a new commit with the current revision as ancestor"
     next = [
-        { id = "run", args = { "jj" = ["new", "-A", "$change_id"] }, next = ["refresh"] },
+        { jj = ["new", "-A", "$change_id"], next = ["refresh"] },
         "wait @refresh",
         "revisions.up",
         "open inline_describe"
@@ -429,7 +434,7 @@ limit = 0
         { on = "K", do = "revisions.jump_to_children" },
         { on = "R", do = "open revert" },
         { on = "l", do = "open details" },
-        { on = "S", do = "open squash" },
+        { on = "S", do = "revisions.squash" },
         { on = "r", do = "open rebase" },
         { on = ["b", "b"], do = "open bookmarks" },
         { on = ["g", "g"], do = "open git" },
