@@ -284,6 +284,11 @@ func (m *Model) SelectedRevisions() jj.SelectedRevisions {
 	for _, row := range m.rows {
 		if _, ok := ids[row.Commit.CommitId]; ok {
 			selected = append(selected, row.Commit)
+			continue
+		}
+		if _, ok := ids[row.Commit.GetChangeId()]; ok {
+			selected = append(selected, row.Commit)
+			continue
 		}
 	}
 
@@ -417,13 +422,6 @@ func (m *Model) internalUpdate(msg tea.Msg) (*Model, tea.Cmd) {
 			return m, cmd
 		case "open squash":
 			selectedRevisions := m.SelectedRevisions()
-			parent, _ := m.context.RunCommandImmediate(jj.GetParent(selectedRevisions))
-			parentIdx := m.selectRevision(string(parent))
-			if parentIdx != -1 {
-				m.SetCursor(parentIdx)
-			} else if m.cursor < len(m.rows)-1 {
-				m.cursor++
-			}
 			files := msg.Action.Get("files", []string{}).([]string)
 			var cmd tea.Cmd
 			m.context.Router, cmd = m.context.Router.Open(scopeSquash, squash.NewOperation(m.context, selectedRevisions, squash.WithFiles(files)))
