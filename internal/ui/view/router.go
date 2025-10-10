@@ -125,6 +125,13 @@ func (r *Router) Update(msg tea.Msg) (*Router, tea.Cmd) {
 				actionMap := hasActionMap.GetActionMap()
 				currentKey := msg.String()
 				matches := actionMap.GetMatch(r.previous, currentKey)
+				if len(matches) == 0 && len(r.previous) > 0 {
+					r.previous = nil
+					return r, func() tea.Msg {
+						// No matches, reset the previous keys
+						return common.ShowAvailableBindingMatches{Matches: nil}
+					}
+				}
 				if len(matches) > 1 {
 					r.previous = append(r.previous, currentKey)
 					return r, func() tea.Msg {
