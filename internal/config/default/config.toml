@@ -168,6 +168,12 @@ limit = 0
     args = { clear = true }
     next = ["switch revset"]
 
+    [actions."revisions.up"]
+    desc = "Up"
+
+    [actions."revisions.down"]
+    desc = "Down"
+
     [actions."revisions.toggle_select"]
     desc = "Toggle selection of current revision"
     next = ["revisions.down"]
@@ -342,9 +348,6 @@ limit = 0
     jj = ["root"]
     next = [
         { id = "flash.add", message = "$output" },
-        "refresh",
-        "wait @refresh",
-        { id = "flash.add", message = "hello" },
     ]
 
     [actions."show_context_variables"]
@@ -365,16 +368,6 @@ limit = 0
     jj = ["rebase", "-r", "$change_id", "--insert-after", "$change_id+"]
     next = ["refresh"]
 
-    [actions."say hello world"]
-    desc = "Greet world"
-    id = "flash.add"
-    message = "Hello, world!"
-
-    [actions."say hello jjui"]
-    desc = "Greet jjui"
-    id = "flash.add"
-    message = "Hello, jjui!"
-
     [bindings]
     revset = [
         { on = "enter", do = "revset.accept" },
@@ -387,8 +380,8 @@ limit = 0
         { on = "esc", do = "close list bookmark_list" },
     ]
     revisions = [
-        { on = ["h", "w"], do = "say hello world" },
-        { on = ["h", "j"], do = "say hello jjui" },
+        { on = "j", do = "revisions.down" },
+        { on = "k", do = "revisions.up" },
         { on = "ctrl+j", do = "move commit down" },
         { on = "ctrl+k", do = "move commit up" },
         { on = "2", do = "show_root" },
@@ -397,8 +390,6 @@ limit = 0
         { on = "-", do = "list_bookmarks" },
         { on = "@", do = "revisions.jump_to_working_copy" },
         { on = "enter", do = "open inline_describe" },
-        { on = "j", do = "revisions.down" },
-        { on = "k", do = "revisions.up" },
         { on = " ", do = "revisions.toggle_select" },
         { on = "J", do = "revisions.jump_to_parent" },
         { on = "K", do = "revisions.jump_to_children" },
