@@ -18,9 +18,8 @@ type Styles struct {
 	SelectedMatch lipgloss.Style
 }
 
-type Model interface {
+type FuzzySearchModel interface {
 	fuzzy.Source
-	tea.Model
 	Max() int
 	Matches() fuzzy.Matches
 	SelectedMatch() int
@@ -41,16 +40,7 @@ func NewStyles() Styles {
 	}
 }
 
-func Search(input string, key tea.KeyMsg) tea.Cmd {
-	return func() tea.Msg {
-		return SearchMsg{
-			Input:   input,
-			Pressed: key,
-		}
-	}
-}
-
-func SelectedMatch(model Model) string {
+func SelectedMatch(model FuzzySearchModel) string {
 	idx := model.SelectedMatch()
 	matches := model.Matches()
 	n := len(matches)
@@ -61,17 +51,8 @@ func SelectedMatch(model Model) string {
 	return model.String(m.Index)
 }
 
-// helper to upcast: Model => tea.Model => Model
-func Update(model Model, msg tea.Msg) (Model, tea.Cmd) {
-	m, c := model.Update(msg)
-	if m, ok := m.(Model); ok {
-		return m, c
-	}
-	return model, c // should never happen.
-}
-
-func View(fzf Model) string {
-	shown := []string{}
+func View(fzf FuzzySearchModel) string {
+	var shown []string
 	max := fzf.Max()
 	styles := fzf.Styles()
 	selected := fzf.SelectedMatch()
@@ -91,7 +72,7 @@ func View(fzf Model) string {
 			matchStyle = styles.SelectedMatch
 		}
 
-		entry = HighlightMatched(entry, match, lineStyle, matchStyle)
+		entry = highlightMatched(entry, match, lineStyle, matchStyle)
 		shown = append(shown, selStyle.Render(sel)+" "+entry)
 	}
 	slices.Reverse(shown)
@@ -151,7 +132,7 @@ func (fzf *RefinedSource) String(i int) string {
 }
 
 // Adapted from gum/filter.go
-func HighlightMatched(line string, match fuzzy.Match, lineStyle lipgloss.Style, matchStyle lipgloss.Style) string {
+func highlightMatched(line string, match fuzzy.Match, lineStyle lipgloss.Style, matchStyle lipgloss.Style) string {
 	var ranges []lipgloss.Range
 	for _, rng := range matchedRanges(match.MatchedIndexes) {
 		start, stop := bytePosToVisibleCharPos(match.Str, rng)

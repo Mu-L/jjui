@@ -15,10 +15,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/context"
-	"github.com/idursun/jjui/internal/ui/exec_process"
-	"github.com/idursun/jjui/internal/ui/fuzzy_files"
-	"github.com/idursun/jjui/internal/ui/fuzzy_input"
-	"github.com/idursun/jjui/internal/ui/fuzzy_search"
 )
 
 type commandStatus int
@@ -45,7 +41,6 @@ type Model struct {
 	mode       string
 	editStatus editStatus
 	history    map[string][]string
-	fuzzy      fuzzy_search.Model
 	styles     styles
 }
 
@@ -74,13 +69,6 @@ func (m *Model) IsFocused() bool {
 	return m.editStatus != nil
 }
 
-func (m *Model) FuzzyView() string {
-	if m.fuzzy == nil {
-		return ""
-	}
-	return m.fuzzy.View()
-}
-
 const CommandClearDuration = 3 * time.Second
 
 type clearMsg string
@@ -106,17 +94,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case actions.InvokeActionMsg:
 		switch msg.Action.Id {
-		case "status.exec_jj", "status.exec_shell":
-			mode := common.ExecJJ
-			if msg.Action.Id == "status.exec_jj" {
-				mode = common.ExecShell
-			}
-			m.mode = "exec " + mode.Mode
-			m.input.Prompt = mode.Prompt
-			m.loadEditingSuggestions()
-
-			m.fuzzy, m.editStatus = fuzzy_input.NewModel(&m.input, m.input.AvailableSuggestions())
-			return m, tea.Batch(m.fuzzy.Init(), m.input.Focus())
 		case "status.quick_search":
 			m.editStatus = emptyEditStatus
 			m.mode = "search"
@@ -124,33 +101,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.loadEditingSuggestions()
 			return m, m.input.Focus()
 		case "status.accept":
-			editMode := m.mode
 			input := m.input.Value()
-			prompt := m.input.Prompt
-			fuzzy := m.fuzzy
 			m.saveEditingSuggestions()
 
-			m.fuzzy = nil
 			m.command = ""
 			m.editStatus = nil
 			m.mode = ""
 			m.input.Reset()
 
-			switch {
-			case strings.HasSuffix(editMode, "file"):
-				_, cmd := fuzzy.Update(msg)
-				return m, cmd
-			case strings.HasPrefix(editMode, "exec"):
-				return m, func() tea.Msg { return exec_process.ExecMsgFromLine(prompt, input) }
-			}
 			return m, func() tea.Msg { return common.QuickSearchMsg(input) }
 		case "status.cancel":
 			var cmd tea.Cmd
-			if m.fuzzy != nil {
-				_, cmd = m.fuzzy.Update(msg)
-			}
-
-			m.fuzzy = nil
 			m.editStatus = nil
 			m.input.Reset()
 			return m, cmd
@@ -175,28 +136,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Tick(CommandClearDuration, func(time.Time) tea.Msg {
 			return clearMsg(commandToBeCleared)
 		})
-	case common.FileSearchMsg:
-		m.mode = "rev file"
-		m.input.Prompt = "> "
-		m.loadEditingSuggestions()
-		m.fuzzy, m.editStatus = fuzzy_files.NewModel(msg)
-		return m, tea.Batch(m.fuzzy.Init(), m.input.Focus())
 	case tea.KeyMsg:
 		if m.IsFocused() {
 			var cmd tea.Cmd
 			m.input, cmd = m.input.Update(msg)
-			if m.fuzzy != nil {
-				cmd = tea.Batch(cmd, fuzzy_search.Search(m.input.Value(), msg))
-			}
 			return m, cmd
 		}
 	default:
 		var cmd tea.Cmd
 		if m.status == commandRunning {
 			m.spinner, cmd = m.spinner.Update(msg)
-		}
-		if m.fuzzy != nil {
-			m.fuzzy, cmd = fuzzy_search.Update(m.fuzzy, msg)
 		}
 		return m, cmd
 	}

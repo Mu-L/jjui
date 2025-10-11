@@ -263,7 +263,7 @@ func (fzf *fuzzyFiles) editStatus() (help.KeyMap, string) {
 	return fzf, ""
 }
 
-func NewModel(msg common.FileSearchMsg) (fuzzy_search.Model, editStatus) {
+func NewModel(msg common.FileSearchMsg) (fuzzy_search.FuzzySearchModel, editStatus) {
 	keyMap := config.Current.GetKeyMap()
 	inputKm := textinput.DefaultKeyMap
 	model := &fuzzyFiles{

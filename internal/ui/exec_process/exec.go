@@ -8,6 +8,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/actions"
 	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/context"
+	"github.com/idursun/jjui/internal/ui/fuzzy_input"
 	"github.com/idursun/jjui/internal/ui/view"
 )
 
@@ -18,7 +19,7 @@ type Model struct {
 	width   int
 	height  int
 	context *context.MainContext
-	input   textinput.Model
+	input   *fuzzy_input.Model
 	styles  styles
 	scope   view.Scope
 }
@@ -50,24 +51,28 @@ func NewModel(ctx *context.MainContext, scope view.Scope) *Model {
 	t.TextStyle = styles.text
 	t.CompletionStyle = styles.dimmed
 	t.PlaceholderStyle = styles.dimmed
+	fi := fuzzy_input.NewModel(t, []string{"hello", "world", "word"})
 
 	return &Model{
 		context: ctx,
 		scope:   scope,
-		input:   t,
+		input:   fi,
 		styles:  styles,
 	}
 }
 
 func (m *Model) Init() tea.Cmd {
 	m.loadEditingSuggestions()
-	return m.input.Focus()
+	return m.input.Init()
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case actions.InvokeActionMsg:
 		switch msg.Action.Id {
+		case "exec_jj.cycle_suggest_mode":
+			m.input.CycleSuggestMode()
+			return m, nil
 		case "exec_jj.accept", "exec_sh.accept":
 			input := m.input.Value()
 			prompt := common.ExecJJ.Prompt
@@ -84,18 +89,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) View() string {
-	//commandStatusMark = ""
-	//editKeys, editHelp := m.editStatus()
-	//if editKeys != nil {
-	//	editHelp = lipgloss.JoinHorizontal(0, m.helpView(editKeys), editHelp)
-	//}
 	mode := string(m.scope)
 	modeWidth := len(mode) + 2
 	mode = m.styles.title.Width(modeWidth).Render("", mode)
 
-	promptWidth := len(m.input.Prompt) + 2
-	m.input.Width = m.width - modeWidth - promptWidth // - lipgloss.Width(editHelp)
-	ret := lipgloss.JoinHorizontal(0, mode, m.input.View())
+	ret := lipgloss.JoinHorizontal(lipgloss.Left, mode, m.input.View())
+	completionView := m.input.CompletionView()
+	if completionView != "" {
+		ret = lipgloss.JoinVertical(lipgloss.Left, completionView, ret)
+	}
 	height := lipgloss.Height(ret)
 	return lipgloss.Place(m.width, height, 0, 0, ret, lipgloss.WithWhitespaceBackground(m.styles.text.GetBackground()))
 }
@@ -107,6 +109,5 @@ func (m *Model) loadEditingSuggestions() {
 	}
 	h := m.context.Histories.GetHistory(config.HistoryKey(mode), true)
 	history := h.Entries()
-	m.input.ShowSuggestions = true
 	m.input.SetSuggestions(history)
 }

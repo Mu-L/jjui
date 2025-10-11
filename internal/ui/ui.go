@@ -222,22 +222,6 @@ func (m Model) internalUpdate(msg tea.Msg) (Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Cancel) && m.flash.Any():
 			m.flash.DeleteOldest()
 			return m, nil
-		//case key.Matches(msg, m.keyMap.Preview.Mode, m.keyMap.Preview.ToggleBottom):
-		//	if key.Matches(msg, m.keyMap.Preview.ToggleBottom) {
-		//		m.previewModel.TogglePosition()
-		//		if m.previewModel.Visible() {
-		//			return m, tea.Batch(cmds...)
-		//		}
-		//	}
-		//	m.previewModel.ToggleVisible()
-		//	cmds = append(cmds, common.SelectionChanged)
-		//	return m, tea.Batch(cmds...)
-		//case key.Matches(msg, m.keyMap.Preview.Expand) && m.previewModel.Visible():
-		//	m.previewModel.Expand()
-		//	return m, tea.Batch(cmds...)
-		//case key.Matches(msg, m.keyMap.Preview.Shrink) && m.previewModel.Visible():
-		//	m.previewModel.Shrink()
-		//	return m, tea.Batch(cmds...)
 		case key.Matches(msg, m.keyMap.FileSearch.Toggle):
 			rev := m.revisions.SelectedRevision()
 			if rev == nil {
@@ -262,15 +246,9 @@ func (m Model) internalUpdate(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.Width = msg.Width
 		m.Height = msg.Height
-		//if s, ok := m.stacked.(common.ISizeable); ok {
-		//	s.SetWidth(m.Width - 2)
-		//	s.SetHeight(m.Height - 2)
-		//}
 		m.status.SetWidth(m.Width)
 		m.revisions.SetHeight(m.Height)
 		m.revisions.SetWidth(m.Width)
-		//m.revsetModel.SetWidth(m.Width)
-		//m.revsetModel.SetHeight(1)
 	}
 	return m, nil
 }
@@ -288,7 +266,6 @@ func (m Model) updateStatus() {
 
 func (m Model) View() string {
 	m.updateStatus()
-	//footer := fmt.Sprintf("waiters: %d channels: %d", 0, actions.ChannelCount.Load())
 	var statusModel tea.Model
 	if v, ok := m.router.Views[view.ScopeExecSh]; ok {
 		statusModel = v
@@ -313,9 +290,6 @@ func (m Model) View() string {
 	topViewHeight := lipgloss.Height(topView)
 
 	bottomPreviewHeight := 0
-	//if m.previewModel.Visible() && m.previewModel.AtBottom() {
-	//	bottomPreviewHeight = int(float64(m.Height) * (m.previewModel.WindowPercentage() / 100.0))
-	//}
 	leftView := m.renderLeftView(footerHeight, topViewHeight, bottomPreviewHeight)
 	centerView := leftView
 	previewModel := m.router.Views[view.ScopePreview]
@@ -325,19 +299,8 @@ func (m Model) View() string {
 			p.SetWidth(m.Width - lipgloss.Width(leftView))
 			p.SetHeight(m.Height - footerHeight - topViewHeight)
 		}
-		//if m.previewModel.AtBottom() {
-		//	m.previewModel.SetWidth(m.Width)
-		//	m.previewModel.SetHeight(bottomPreviewHeight)
-		//} else {
-		//	m.previewModel.SetWidth(m.Width - lipgloss.Width(leftView))
-		//	m.previewModel.SetHeight(m.Height - footerHeight - topViewHeight)
-		//}
 		previewView := previewModel.View()
-		//if m.previewModel.AtBottom() {
-		//	centerView = lipgloss.JoinVertical(lipgloss.Top, leftView, previewView)
-		//} else {
 		centerView = lipgloss.JoinHorizontal(lipgloss.Left, leftView, previewView)
-		//}
 	}
 
 	var stacked tea.Model
@@ -374,33 +337,16 @@ func (m Model) View() string {
 		w, h := lipgloss.Size(actionsView)
 		full = screen.Stacked(full, actionsView, (m.Width-w)/2, (m.Height-h)/2)
 	}
-	//if v, ok := m.router.Views[view.ScopeExecJJ]; ok {
-	//	statusView := v.View()
-	//	if statusView != "" {
-	//		_, mh := lipgloss.Size(statusView)
-	//		full = screen.Stacked(full, statusView, 0, m.Height-mh-1)
-	//	}
-	//}
 	return full
 }
 
 func (m Model) renderLeftView(footerHeight int, topViewHeight int, bottomPreviewHeight int) string {
 	w := m.Width
-	//h := 0
-
 	if _, ok := m.router.Views[view.ScopePreview]; ok {
 		w = m.Width - int(float64(m.Width)*(50/100.0))
 	}
-	//if m.previewModel.Visible() {
-	//	if m.previewModel.AtBottom() {
-	//		h = bottomPreviewHeight
-	//	} else {
-	//		w = m.Width - int(float64(m.Width)*(m.previewModel.WindowPercentage()/100.0))
-	//	}
-	//}
 
 	var model tea.Model
-
 	if oplog, ok := m.router.Views[view.ScopeOplog]; ok {
 		model = oplog
 	} else {
