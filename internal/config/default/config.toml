@@ -610,8 +610,10 @@ limit = 0
     exec_sh = [
         { on = "esc", do = "close exec_sh" },
         { on = "enter", do = "exec_sh.accept" },
+        { on = "ctrl+r", do = "exec_sh.cycle_suggest_mode" },
     ]
     exec_jj = [
         { on = "esc", do = "close exec_jj" },
         { on = "enter", do = "exec_jj.accept" },
+        { on = "ctrl+r", do = "exec_jj.cycle_suggest_mode" },
     ]
