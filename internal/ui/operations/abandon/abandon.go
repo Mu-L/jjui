@@ -19,9 +19,10 @@ var _ operations.Operation = (*Operation)(nil)
 var _ view.IHasActionMap = (*Operation)(nil)
 
 type Operation struct {
-	model   *confirmation.Model
-	current *jj.Commit
-	context *context.MainContext
+	model             *confirmation.Model
+	current           *jj.Commit
+	context           *context.MainContext
+	selectedRevisions jj.SelectedRevisions
 }
 
 func (a *Operation) GetActionMap() actions.ActionMap {
@@ -37,7 +38,7 @@ func (a *Operation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Action.Id {
 		case "abandon.apply", "abandon.force_apply":
 			ignoreImmutable := msg.Action.Id == "abandon.force_apply"
-			return a, a.context.RunCommand(jj.Abandon(jj.SelectedRevisions{Revisions: []*jj.Commit{a.current}}, ignoreImmutable), common.Refresh)
+			return a, a.context.RunCommand(jj.Abandon(a.selectedRevisions, ignoreImmutable), common.Refresh)
 		}
 	}
 	var cmd tea.Cmd
@@ -94,8 +95,9 @@ func NewOperation(context *context.MainContext, selectedRevisions jj.SelectedRev
 	)
 
 	op := &Operation{
-		context: context,
-		model:   model,
+		context:           context,
+		model:             model,
+		selectedRevisions: selectedRevisions,
 	}
 	return op
 }
