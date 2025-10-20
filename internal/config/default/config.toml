@@ -321,6 +321,8 @@ next = ["refresh"]
 
 [bindings]
 revset = [
+    { on = "up", do = "revset.prev" },
+    { on = "down", do = "revset.next" },
     { on = "enter", do = "revset.accept" },
     { on = "esc", do = "revset.cancel" },
 ]

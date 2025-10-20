@@ -149,6 +149,35 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case actions.InvokeActionMsg:
 		switch msg.Action.Id {
+		case "revset.prev":
+			if len(m.History) > 0 {
+				if !m.historyActive {
+					m.currentInput = m.autoComplete.Value()
+					m.historyActive = true
+				}
+
+				if m.historyIndex < len(m.History)-1 {
+					m.historyIndex++
+					m.autoComplete.SetValue(m.History[m.historyIndex])
+					m.autoComplete.CursorEnd()
+				}
+			} else {
+				m.autoComplete.SetValue(m.context.CurrentRevset)
+			}
+			return m, nil
+		case "revset.next":
+			if m.historyActive {
+				if m.historyIndex > 0 {
+					m.historyIndex--
+					m.autoComplete.SetValue(m.History[m.historyIndex])
+				} else {
+					m.historyIndex = -1
+					m.historyActive = false
+					m.autoComplete.SetValue(m.currentInput)
+				}
+				m.autoComplete.CursorEnd()
+			}
+			return m, nil
 		case "revset.cancel":
 			m.Editing = false
 			m.autoComplete.Blur()
@@ -158,6 +187,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Editing = false
 				m.autoComplete.Blur()
 				value := m.autoComplete.Value()
+				m.AddToHistory(value)
 				return m, common.UpdateRevSet(value)
 			}
 			return m, nil
@@ -175,48 +205,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.historyActive = false
 			m.historyIndex = -1
 			return m, m.autoComplete.Init()
-		}
-	case tea.KeyMsg:
-		if !m.Editing {
-			return m, nil
-		}
-		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
-			m.Editing = false
-			m.autoComplete.Blur()
-			return m, nil
-		case tea.KeyEnter:
-			m.Editing = false
-			m.autoComplete.Blur()
-			value := m.autoComplete.Value()
-			return m, common.UpdateRevSet(value)
-		case tea.KeyUp:
-			if len(m.History) > 0 {
-				if !m.historyActive {
-					m.currentInput = m.autoComplete.Value()
-					m.historyActive = true
-				}
-
-				if m.historyIndex < len(m.History)-1 {
-					m.historyIndex++
-					m.autoComplete.SetValue(m.History[m.historyIndex])
-					m.autoComplete.CursorEnd()
-				}
-				return m, nil
-			}
-		case tea.KeyDown:
-			if m.historyActive {
-				if m.historyIndex > 0 {
-					m.historyIndex--
-					m.autoComplete.SetValue(m.History[m.historyIndex])
-				} else {
-					m.historyIndex = -1
-					m.historyActive = false
-					m.autoComplete.SetValue(m.currentInput)
-				}
-				m.autoComplete.CursorEnd()
-				return m, nil
-			}
 		}
 	case common.UpdateRevSetMsg:
 		if m.Editing {
