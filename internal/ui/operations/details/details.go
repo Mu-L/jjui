@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/cellbuf"
 	"github.com/idursun/jjui/internal/config"
 	"github.com/idursun/jjui/internal/jj"
 	"github.com/idursun/jjui/internal/ui/common"
@@ -33,8 +34,9 @@ var (
 )
 
 type Operation struct {
-	*DetailsList
+	*common.ViewNode
 	*common.MouseAware
+	list              *DetailsList
 	context           *context.MainContext
 	Current           *jj.Commit
 	keymap            config.KeyMappings[key.Binding]
@@ -43,6 +45,15 @@ type Operation struct {
 	confirmation      *confirmation.Model
 	keyMap            config.KeyMappings[key.Binding]
 	styles            styles
+}
+
+func (s *Operation) SetFrame(frame cellbuf.Rectangle) {
+	s.ViewNode.SetFrame(frame)
+	s.list.SetFrame(frame)
+}
+
+func (s *Operation) GetViewNode() *common.ViewNode {
+	return s.ViewNode
 }
 
 func (s *Operation) IsOverlay() bool {
@@ -61,8 +72,8 @@ func (s *Operation) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case confirmation.CloseMsg:
 		s.confirmation = nil
-		s.selectedHint = ""
-		s.unselectedHint = ""
+		s.list.selectedHint = ""
+		s.list.unselectedHint = ""
 		return nil
 	case common.RefreshMsg:
 		return s.load(s.revision.GetChangeId())
@@ -80,11 +91,11 @@ func (s *Operation) Update(msg tea.Msg) tea.Cmd {
 				s.context.AddCheckedItem(sel)
 			}
 		}
-		s.setItems(items)
+		s.list.setItems(items)
 
 		// Set selection to current cursor position
 		var selectionChangedCmd tea.Cmd
-		if current := s.current(); current != nil {
+		if current := s.list.current(); current != nil {
 			selectionChangedCmd = s.context.SetSelectedItem(context.SelectedFile{
 				ChangeId: s.revision.GetChangeId(),
 				CommitId: s.revision.CommitId,
@@ -93,14 +104,14 @@ func (s *Operation) Update(msg tea.Msg) tea.Cmd {
 		}
 		return selectionChangedCmd
 	default:
-		oldCursor := s.cursor
+		oldCursor := s.list.cursor
 		var cmds []tea.Cmd
 		cmds = append(cmds, s.internalUpdate(msg))
-		if s.cursor != oldCursor {
+		if s.list.cursor != oldCursor {
 			cmds = append(cmds, s.context.SetSelectedItem(context.SelectedFile{
 				ChangeId: s.revision.GetChangeId(),
 				CommitId: s.revision.CommitId,
-				File:     s.current().fileName,
+				File:     s.list.current().fileName,
 			}))
 		}
 		return tea.Batch(cmds...)
@@ -115,10 +126,10 @@ func (s *Operation) internalUpdate(msg tea.Msg) tea.Cmd {
 		}
 		switch {
 		case key.Matches(msg, s.keyMap.Up):
-			s.cursorUp()
+			s.list.cursorUp()
 			return nil
 		case key.Matches(msg, s.keyMap.Down):
-			s.cursorDown()
+			s.list.cursorDown()
 			return nil
 		case key.Matches(msg, s.keyMap.Cancel), key.Matches(msg, s.keyMap.Details.Close):
 			return common.Close
@@ -127,7 +138,7 @@ func (s *Operation) internalUpdate(msg tea.Msg) tea.Cmd {
 		case key.Matches(msg, s.keyMap.Refresh):
 			return common.Refresh
 		case key.Matches(msg, s.keyMap.Details.Diff):
-			selected := s.current()
+			selected := s.list.current()
 			if selected == nil {
 				return nil
 			}
@@ -138,8 +149,8 @@ func (s *Operation) internalUpdate(msg tea.Msg) tea.Cmd {
 		case key.Matches(msg, s.keyMap.Details.Split, s.keyMap.Details.SplitParallel):
 			isParallel := key.Matches(msg, s.keyMap.Details.SplitParallel)
 			selectedFiles := s.getSelectedFiles(true)
-			s.selectedHint = "stays as is"
-			s.unselectedHint = "moves to the new revision"
+			s.list.selectedHint = "stays as is"
+			s.list.unselectedHint = "moves to the new revision"
 			model := confirmation.New(
 				[]string{"Are you sure you want to split the selected files?"},
 				confirmation.WithStylePrefix("revisions"),
@@ -158,9 +169,9 @@ func (s *Operation) internalUpdate(msg tea.Msg) tea.Cmd {
 			}
 		case key.Matches(msg, s.keyMap.Details.Restore):
 			selectedFiles := s.getSelectedFiles(true)
-			selected := s.current()
-			s.selectedHint = "gets restored"
-			s.unselectedHint = "stays as is"
+			selected := s.list.current()
+			s.list.selectedHint = "gets restored"
+			s.list.unselectedHint = "stays as is"
 			model := confirmation.New(
 				[]string{"Are you sure you want to restore the selected files?"},
 				confirmation.WithStylePrefix("revisions"),
@@ -178,8 +189,8 @@ func (s *Operation) internalUpdate(msg tea.Msg) tea.Cmd {
 			return s.confirmation.Init()
 		case key.Matches(msg, s.keyMap.Details.Absorb):
 			selectedFiles := s.getSelectedFiles(true)
-			s.selectedHint = "might get absorbed into parents"
-			s.unselectedHint = "stays as is"
+			s.list.selectedHint = "might get absorbed into parents"
+			s.list.unselectedHint = "stays as is"
 			model := confirmation.New(
 				[]string{"Are you sure you want to absorb changes from the selected files?"},
 				confirmation.WithStylePrefix("revisions"),
@@ -193,7 +204,7 @@ func (s *Operation) internalUpdate(msg tea.Msg) tea.Cmd {
 			s.confirmation = model
 			return s.confirmation.Init()
 		case key.Matches(msg, s.keyMap.Details.ToggleSelect):
-			if current := s.current(); current != nil {
+			if current := s.list.current(); current != nil {
 				isChecked := !current.selected
 				current.selected = isChecked
 
@@ -208,11 +219,11 @@ func (s *Operation) internalUpdate(msg tea.Msg) tea.Cmd {
 					s.context.RemoveCheckedItem(checkedFile)
 				}
 
-				s.cursorDown()
+				s.list.cursorDown()
 			}
 			return nil
 		case key.Matches(msg, s.keyMap.Details.RevisionsChangingFile):
-			if current := s.current(); current != nil {
+			if current := s.list.current(); current != nil {
 				return tea.Batch(common.Close, common.UpdateRevSet(fmt.Sprintf("files(%s)", jj.EscapeFileName(current.fileName))))
 			}
 		}
@@ -221,17 +232,18 @@ func (s *Operation) internalUpdate(msg tea.Msg) tea.Cmd {
 }
 
 func (s *Operation) View() string {
-	confirmationView := ""
-	ch := 0
-	if s.confirmation != nil {
-		confirmationView = s.confirmation.View()
-		ch = lipgloss.Height(confirmationView)
-	}
-	if s.Len() == 0 {
+	if s.list.Len() == 0 {
 		return s.styles.Dimmed.Render("No changes\n")
 	}
-	s.SetHeight(min(s.Parent.Height-5-ch, s.Len()))
-	filesView := s.renderer.Render(s.cursor)
+
+	confirmationView := ""
+	if s.confirmation != nil {
+		confirmationView = s.confirmation.View()
+	}
+
+	// give max height
+	s.list.SetFrame(cellbuf.Rect(s.Frame.Min.X, s.Frame.Min.Y, s.Width, 1<<8))
+	filesView := s.list.renderer.Render(s.list.cursor)
 	if confirmationView != "" {
 		return lipgloss.JoinVertical(lipgloss.Top, filesView, confirmationView)
 	}
@@ -278,17 +290,17 @@ func (s *Operation) Name() string {
 
 func (s *Operation) getSelectedFiles(allowVirtualSelection bool) []string {
 	selectedFiles := make([]string, 0)
-	if len(s.files) == 0 {
+	if len(s.list.files) == 0 {
 		return selectedFiles
 	}
 
-	for _, f := range s.files {
+	for _, f := range s.list.files {
 		if f.selected {
 			selectedFiles = append(selectedFiles, f.fileName)
 		}
 	}
 	if len(selectedFiles) == 0 && allowVirtualSelection {
-		selectedFiles = append(selectedFiles, s.current().fileName)
+		selectedFiles = append(selectedFiles, s.list.current().fileName)
 		return selectedFiles
 	}
 	return selectedFiles
@@ -300,11 +312,11 @@ func (s *Operation) ClickAt(x, y int) tea.Cmd {
 	if s.confirmation != nil {
 		return nil
 	}
-	newCursor := s.DetailsList.ClickAt(x, y)
+	newCursor := s.list.ClickAt(x, y)
 	if newCursor == -1 {
 		return nil
 	}
-	current := s.current()
+	current := s.list.current()
 	if current == nil {
 		return nil
 	}
@@ -403,9 +415,8 @@ func NewOperation(context *context.MainContext, selected *jj.Commit) *Operation 
 		Conflict: common.DefaultPalette.Get("revisions details conflict"),
 	}
 
-	l := NewDetailsList(s, common.NewViewNode(0, 0))
 	op := &Operation{
-		DetailsList:       l,
+		ViewNode:          common.NewViewNode(0, 0),
 		MouseAware:        common.NewMouseAware(),
 		context:           context,
 		revision:          selected,
@@ -414,6 +425,7 @@ func NewOperation(context *context.MainContext, selected *jj.Commit) *Operation 
 		keymap:            config.Current.GetKeyMap(),
 		targetMarkerStyle: common.DefaultPalette.Get("revisions details target_marker"),
 	}
-	l.Parent = op.ViewNode
+	op.list = NewDetailsList(s, common.NewViewNode(0, 0))
+	op.list.Parent = op.ViewNode
 	return op
 }

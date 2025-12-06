@@ -332,9 +332,9 @@ func (ir *itemRenderer) Height() int {
 
 func (ir *itemRenderer) recordSection(w list.CursorWriter, pos operations.RenderPosition, content string) {
 	//_, _ := w.LocalPos()
-	screenLine, screenCol := w.ViewportPos()
-	height := strings.Count(content, "\n") + 1
 	if vn := ir.op.GetViewNode(); vn != nil && pos == operations.RenderPositionAfter {
-		vn.SetFrame(cellbuf.Rect(screenCol, screenLine+1, 40, height))
+		screenLine, screenCol := w.ViewportPos()
+		height := strings.Count(content, "\n")
+		vn.SetFrame(cellbuf.Rect(screenCol, screenLine+1, vn.Width, height))
 	}
 }

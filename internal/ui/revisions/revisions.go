@@ -170,6 +170,9 @@ func (m *Model) rowRangeFor(row int) (list.RowRange, bool) {
 }
 
 func (m *Model) Scroll(delta int) tea.Cmd {
+	if _, ok := m.op.(common.IMouseAware); ok {
+		return m.op.(common.IMouseAware).Scroll(delta)
+	}
 	m.ensureCursorView = false
 	desiredStart := m.renderer.ViewRange.Start + delta
 	if desiredStart < 0 {
