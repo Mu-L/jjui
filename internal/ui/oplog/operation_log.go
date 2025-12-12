@@ -11,6 +11,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/common/list"
 	"github.com/idursun/jjui/internal/ui/context"
+	"github.com/idursun/jjui/internal/ui/intents"
 )
 
 type updateOpLogMsg struct {
@@ -130,6 +131,8 @@ func (m *Model) Scroll(delta int) tea.Cmd {
 
 func (m *Model) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
+	case intents.Intent:
+		return m.handleIntent(msg)
 	case updateOpLogMsg:
 		m.rows = msg.Rows
 		m.renderer.Reset()
@@ -149,30 +152,56 @@ func (m *Model) Update(msg tea.Msg) tea.Cmd {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keymap.Cancel):
-			return common.Close
+			return m.handleIntent(intents.OpLogClose{})
 		case key.Matches(msg, m.keymap.Up):
-			if m.cursor > 0 {
-				m.cursor--
-				m.ensureCursorView = true
-			}
+			return m.handleIntent(intents.OpLogNavigate{Delta: -1})
 		case key.Matches(msg, m.keymap.Down):
-			if m.cursor < len(m.rows)-1 {
-				m.cursor++
-				m.ensureCursorView = true
-			}
+			return m.handleIntent(intents.OpLogNavigate{Delta: 1})
 		case key.Matches(msg, m.keymap.Diff):
-			return func() tea.Msg {
-				output, _ := m.context.RunCommandImmediate(jj.OpShow(m.rows[m.cursor].OperationId))
-				return common.ShowDiffMsg(output)
-			}
+			return m.handleIntent(intents.OpLogShowDiff{})
 		case key.Matches(msg, m.keymap.OpLog.Restore):
-			return tea.Batch(common.Close, m.context.RunCommand(jj.OpRestore(m.rows[m.cursor].OperationId), common.Refresh))
+			return m.handleIntent(intents.OpLogRestore{})
 		case key.Matches(msg, m.keymap.OpLog.Revert):
-			return tea.Batch(common.Close, m.context.RunCommand(jj.OpRevert(m.rows[m.cursor].OperationId), common.Refresh))
+			return m.handleIntent(intents.OpLogRevert{})
 		}
 
 	}
 	return m.updateSelection()
+}
+
+func (m *Model) handleIntent(intent intents.Intent) tea.Cmd {
+	if len(m.rows) == 0 {
+		switch intent.(type) {
+		case intents.OpLogClose:
+			return common.Close
+		}
+		return nil
+	}
+
+	switch intent := intent.(type) {
+	case intents.OpLogClose:
+		return common.Close
+	case intents.OpLogNavigate:
+		switch {
+		case intent.Delta < 0 && m.cursor > 0:
+			m.cursor--
+			m.ensureCursorView = true
+		case intent.Delta > 0 && m.cursor < len(m.rows)-1:
+			m.cursor++
+			m.ensureCursorView = true
+		}
+		return m.updateSelection()
+	case intents.OpLogShowDiff:
+		return func() tea.Msg {
+			output, _ := m.context.RunCommandImmediate(jj.OpShow(m.rows[m.cursor].OperationId))
+			return common.ShowDiffMsg(output)
+		}
+	case intents.OpLogRestore:
+		return tea.Batch(common.Close, m.context.RunCommand(jj.OpRestore(m.rows[m.cursor].OperationId), common.Refresh))
+	case intents.OpLogRevert:
+		return tea.Batch(common.Close, m.context.RunCommand(jj.OpRevert(m.rows[m.cursor].OperationId), common.Refresh))
+	}
+	return nil
 }
 
 func (m *Model) updateSelection() tea.Cmd {
