@@ -10,6 +10,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	lua "github.com/yuin/gopher-lua"
 
+	"github.com/idursun/jjui/internal/ui/choose"
 	"github.com/idursun/jjui/internal/ui/common"
 	uicontext "github.com/idursun/jjui/internal/ui/context"
 	"github.com/idursun/jjui/internal/ui/operations/rebase"
@@ -261,6 +262,10 @@ func registerAPI(L *lua.LState, runner *Runner) {
 		L.Push(lua.LNil)
 		return 2
 	})
+	chooseFn := L.NewFunction(func(L *lua.LState) int {
+		options := argsFromLua(L)
+		return yieldStep(L, step{cmd: choose.Show(options), matcher: matchChoose})
+	})
 
 	// make sure we have a `jjui` namespace
 	root := L.NewTable()
@@ -271,6 +276,7 @@ func registerAPI(L *lua.LState, runner *Runner) {
 	root.RawSetString("jj", jjFn)
 	root.RawSetString("flash", flashFn)
 	root.RawSetString("copy_to_clipboard", copyToClipboardFn)
+	root.RawSetString("choose", chooseFn)
 	L.SetGlobal("jjui", root)
 
 	// but also expose at the top level for convenience
@@ -281,6 +287,7 @@ func registerAPI(L *lua.LState, runner *Runner) {
 	L.SetGlobal("jj", jjFn)
 	L.SetGlobal("flash", flashFn)
 	L.SetGlobal("copy_to_clipboard", copyToClipboardFn)
+	L.SetGlobal("choose", chooseFn)
 }
 
 func payloadFromTop(L *lua.LState) map[string]any {
@@ -476,4 +483,15 @@ func matchCloseViewMsg(msg tea.Msg) (bool, []lua.LValue) {
 		return true, []lua.LValue{lua.LBool(closeMsg.Applied)}
 	}
 	return false, nil
+}
+
+func matchChoose(msg tea.Msg) (bool, []lua.LValue) {
+	switch msg := msg.(type) {
+	case choose.SelectedMsg:
+		return true, []lua.LValue{lua.LString(msg.Value)}
+	case choose.CancelledMsg:
+		return true, []lua.LValue{lua.LNil}
+	default:
+		return false, nil
+	}
 }
