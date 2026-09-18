@@ -87,6 +87,10 @@ var _ common.ImmediateModel = (*Model)(nil)
 
 func New(ctx *appContext.MainContext, revision string) *Model {
 	dark := ctx != nil && ctx.TerminalHasDarkBackground
+	var terminalPalette map[int]string
+	if ctx != nil {
+		terminalPalette = ctx.TerminalPalette
+	}
 	return &Model{
 		context: ctx,
 		document: reviewDocument{
@@ -96,7 +100,7 @@ func New(ctx *appContext.MainContext, revision string) *Model {
 		selectionAnchor: -1,
 		loader:          annotationLoader{context: ctx},
 		clipboardWriter: clipboard.WriteAll,
-		renderer:        newAnnotationRenderer(dark),
+		renderer:        newAnnotationRenderer(dark, terminalPalette),
 	}
 }
 
@@ -261,6 +265,13 @@ func (m *Model) HandleIntent(intent intents.Intent) (tea.Cmd, bool) {
 
 func (m *Model) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
+	case common.ThemeChangedMsg:
+		dark := m.context != nil && m.context.TerminalHasDarkBackground
+		m.renderer = newAnnotationRenderer(dark)
+		if m.context != nil {
+			m.renderer.highlighter = newSourceHighlighter(dark, m.context.TerminalPalette)
+		}
+		return nil
 	case intents.Intent:
 		cmd, _ := m.HandleIntent(msg)
 		return cmd
@@ -421,6 +432,9 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 	dark := m.context != nil && m.context.TerminalHasDarkBackground
 	if m.renderer.highlighter == nil || dark != m.renderer.highlighterDark {
 		m.renderer = newAnnotationRenderer(dark)
+		if m.context != nil {
+			m.renderer.highlighter = newSourceHighlighter(dark, m.context.TerminalPalette)
+		}
 	}
 	if m.editing {
 		m.resizeEditor(m.viewportWidth)

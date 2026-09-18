@@ -42,13 +42,15 @@ func parseColor(value string) color.Color {
 }
 
 func resolvePaletteColor(value string, terminalPalette map[int]string) string {
-	if resolved, ok := resolveTerminalColor(parseColor(value), terminalPalette); ok {
+	if resolved, ok := ResolveTerminalColor(parseColor(value), terminalPalette); ok {
 		return resolved
 	}
 	return value
 }
 
-func resolveTerminalColor(value color.Color, terminalPalette map[int]string) (string, bool) {
+// ResolveTerminalColor returns a hex RGB colour, using the reported terminal
+// palette for ANSI colours. Unset colours and unreported slots are unresolved.
+func ResolveTerminalColor(value color.Color, terminalPalette map[int]string) (string, bool) {
 	switch value := value.(type) {
 	case lipgloss.NoColor:
 		return "", false

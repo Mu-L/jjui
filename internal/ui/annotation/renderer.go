@@ -80,9 +80,9 @@ type displayLineCacheKey struct {
 	wrap              bool
 }
 
-func newAnnotationRenderer(dark bool) annotationRenderer {
+func newAnnotationRenderer(dark bool, terminalPalettes ...map[int]string) annotationRenderer {
 	return annotationRenderer{
-		highlighter:     newSourceHighlighter(dark),
+		highlighter:     newSourceHighlighter(dark, terminalPalettes...),
 		highlighterDark: dark,
 	}
 }
@@ -149,7 +149,7 @@ func (r *annotationRenderer) Render(
 	lines, editorStart := r.buildDisplayLines(state, bodyBox.R.Dx())
 	result.scrollY = clampScroll(state.scrollY, len(lines), bodyBox.R.Dy())
 
-	selectedStyle := common.DefaultPalette.Get("annotation", "", "", true)
+	selectedStyle := common.DefaultPalette.GetBlended("annotation", "", "", true)
 	selectedStart, selectedEnd := state.selectedRange()
 	cursorY := -1
 	cursorX := contentColumn

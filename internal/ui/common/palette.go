@@ -113,7 +113,7 @@ func (p *Palette) BlendBackgroundCustom(
 	scope, component string,
 	ratio float64,
 ) lipgloss.Style {
-	background, ok := resolveTerminalColor(style.GetBackground(), p.blend.terminalPalette)
+	background, ok := ResolveTerminalColor(style.GetBackground(), p.blend.terminalPalette)
 	if !ok {
 		return style
 	}
