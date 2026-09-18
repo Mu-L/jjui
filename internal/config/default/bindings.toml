@@ -473,6 +473,12 @@ bindings = [
     { key = "shift+x", action = "annotation.clear", scope = "annotation", desc = "clear comments" },
     { key = "esc", action = "ui.cancel", scope = "annotation", desc = "close" },
 
+    # annotation.confirmation
+    { key = ["left", "h"], action = "annotation.confirmation.prev", scope = "annotation.confirmation", desc = "prev" },
+    { key = ["right", "l"], action = "annotation.confirmation.next", scope = "annotation.confirmation", desc = "next" },
+    { key = "enter", action = "annotation.confirmation.apply", scope = "annotation.confirmation", desc = "apply" },
+    { key = "esc", action = "annotation.confirmation.cancel", scope = "annotation.confirmation", desc = "keep reviewing" },
+
     # annotation.editor
     { key = ["alt+enter", "ctrl+s"], action = "annotation.editor.save", scope = "annotation.editor", desc = "save" },
     { key = "esc", action = "annotation.editor.cancel", scope = "annotation.editor", desc = "cancel" },

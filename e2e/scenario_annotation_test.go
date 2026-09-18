@@ -67,7 +67,7 @@ func Test_Annotation_EditorConsumesBindingsAndCancelsDraft(t *testing.T) {
 	h.Key("Escape")
 	h.WaitText("comment: saved comment")
 	h.WaitNoText("discarded edit")
-	closeAnnotation(t, h)
+	discardAnnotation(t, h)
 }
 
 func Test_Annotation_ExpandedHelpEscClosesHelpBeforeAnnotation(t *testing.T) {
@@ -76,13 +76,16 @@ func Test_Annotation_ExpandedHelpEscClosesHelpBeforeAnnotation(t *testing.T) {
 	h.repo.Write("review.go", "review line\n").Commit("review target")
 	openAnnotation(t, h, "review target", "review.go")
 
+	addReviewComment(t, h, "uncopied note")
+
 	annotationKey(t, h, ghostty.KeySlash, "?", ghostty.ModShift)
 	h.WaitText("close help")
 	h.Key("Escape")
 	h.WaitNoText("close help")
-	h.WaitText("0 annotations")
+	h.WaitText("1 annotations")
+	h.WaitNoText("Discard uncopied comments?")
 
-	closeAnnotation(t, h)
+	discardAnnotation(t, h)
 }
 
 func Test_Annotation_CommentPickerFindsLineOutsideDiff(t *testing.T) {
@@ -107,7 +110,7 @@ func Test_Annotation_CommentPickerFindsLineOutsideDiff(t *testing.T) {
 	screen := h.WaitText("comment: outside diff note")
 	h.WaitText("review.txt [full]")
 	assertCommentAfter(t, screen, "unchanged line 01", "comment: outside diff note")
-	closeAnnotation(t, h)
+	discardAnnotation(t, h)
 }
 
 func Test_Annotation_NavigatesFilesAndRevisionsWithComments(t *testing.T) {
@@ -220,7 +223,7 @@ func Test_Annotation_ResizePreservesEditorDraft(t *testing.T) {
 	}
 	screen := h.WaitText("comment: draft survives resize and remains editable done")
 	assertCommentAfter(t, screen, "source line 45", "comment: draft survives resize")
-	closeAnnotation(t, h)
+	discardAnnotation(t, h)
 }
 
 func openAnnotation(t *testing.T, h *Harness, description, path string) {
@@ -262,6 +265,16 @@ func pickReviewComment(h *Harness, comment string) {
 	h.Key("Enter")
 }
 
+func discardAnnotation(t *testing.T, h *Harness) {
+	t.Helper()
+	h.Key("Escape")
+	h.WaitText("Discard uncopied comments?")
+	h.Key("l")
+	h.Key("Enter")
+	h.WaitNoText("annotations")
+	h.Quit()
+}
+
 func closeAnnotation(t *testing.T, h *Harness) {
 	t.Helper()
 	h.Key("Escape")
@@ -293,4 +306,36 @@ func waitAnnotationClipboard(t *testing.T, h *Harness) string {
 		return true, nil
 	})
 	return payload
+}
+
+func Test_Annotation_CloseConfirmationKeepsCommentsUntilDiscarded(t *testing.T) {
+	t.Parallel()
+	h := NewHarness(t)
+	h.repo.Write("review.go", "review line\n").Commit("review target")
+	openAnnotation(t, h, "review target", "review.go")
+	addReviewComment(t, h, "keep this comment")
+	for _, key := range []string{"Enter", "Escape"} {
+		h.Key("Escape")
+		h.WaitText("Discard uncopied comments?")
+		h.Key(key)
+		h.WaitNoText("Discard uncopied comments?")
+		h.WaitText("comment: keep this comment")
+	}
+	discardAnnotation(t, h)
+}
+
+func Test_Annotation_CopyThenEditRequiresConfirmationAgain(t *testing.T) {
+	t.Parallel()
+	h := NewHarness(t)
+	h.repo.Write("review.go", "review line\n").Commit("review target")
+	openAnnotation(t, h, "review target", "review.go")
+	addReviewComment(t, h, "original comment")
+	h.Key("y")
+	waitAnnotationClipboard(t, h)
+	h.Key("c")
+	h.WaitText("alt+enter")
+	h.Text(" updated")
+	saveReviewComment(t, h)
+	h.WaitText("comment: original comment updated")
+	discardAnnotation(t, h)
 }

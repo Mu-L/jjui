@@ -9,6 +9,7 @@ import (
 
 const (
 	ScopeAnnotation                 = "annotation"
+	ScopeAnnotationConfirmation     = "annotation.confirmation"
 	ScopeAnnotationEditor           = "annotation.editor"
 	ScopeBookmarkPane               = "bookmark_pane"
 	ScopeBookmarkPaneConfirmation   = "bookmark_pane.confirmation"
@@ -105,6 +106,17 @@ func ResolveIntent(scope string, action keybindings.Action, args map[string]any)
 			return intents.AnnotationTogglePresentation{}, true
 		case keybindings.Action("annotation.toggle_wrap"):
 			return intents.AnnotationToggleWrap{}, true
+		}
+	case ScopeAnnotationConfirmation:
+		switch action {
+		case keybindings.Action("annotation.confirmation.apply"):
+			return intents.Apply{Force: actionargs.BoolArg(args, "force", false)}, true
+		case keybindings.Action("annotation.confirmation.cancel"):
+			return intents.Cancel{}, true
+		case keybindings.Action("annotation.confirmation.next"):
+			return intents.OptionSelect{Delta: 1}, true
+		case keybindings.Action("annotation.confirmation.prev"):
+			return intents.OptionSelect{Delta: -1}, true
 		}
 	case ScopeAnnotationEditor:
 		switch action {

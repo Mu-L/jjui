@@ -84,6 +84,7 @@ function wait_close() end
 function wait_refresh() end
 
 ---@class jjui.annotation
+---@field confirmation jjui.annotation.confirmation
 ---@field editor jjui.annotation.editor
 ---@field add fun()
 ---@field child_revision fun()
@@ -109,6 +110,13 @@ function wait_refresh() end
 ---@field target_picker fun()
 ---@field toggle_presentation fun()
 ---@field toggle_wrap fun()
+
+---@class jjui.annotation.confirmation
+---@field apply fun(args: {force?: boolean})
+---@field cancel fun()
+---@field next fun()
+---@field prev fun()
+---@field close fun()
 
 ---@class jjui.annotation.editor
 ---@field cancel fun()

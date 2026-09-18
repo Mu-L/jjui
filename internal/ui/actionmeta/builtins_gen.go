@@ -12,6 +12,10 @@ var builtInActionScopes = map[string][]string{
 	"annotation.child_revision":                     {"annotation"},
 	"annotation.clear":                              {"annotation"},
 	"annotation.comment_picker":                     {"annotation"},
+	"annotation.confirmation.apply":                 {"annotation.confirmation"},
+	"annotation.confirmation.cancel":                {"annotation.confirmation"},
+	"annotation.confirmation.next":                  {"annotation.confirmation"},
+	"annotation.confirmation.prev":                  {"annotation.confirmation"},
 	"annotation.copy":                               {"annotation"},
 	"annotation.delete":                             {"annotation"},
 	"annotation.editor.cancel":                      {"annotation.editor"},
@@ -365,6 +369,9 @@ var builtInActionScopes = map[string][]string{
 }
 
 var builtInActionArgSchemas = map[string]map[string]string{
+	"annotation.confirmation.apply": {
+		"force": "bool",
+	},
 	"bookmark_pane.confirmation.apply": {
 		"force": "bool",
 	},

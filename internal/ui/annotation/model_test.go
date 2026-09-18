@@ -1021,3 +1021,77 @@ func TestDiffSelectionSkipsHeadersAndCreatesSideAwareRange(t *testing.T) {
 	assert.Equal(t, lineRange{Start: 10, End: 10}, annotation.NewLines)
 	assert.Equal(t, " same\n-old", annotation.Snippet)
 }
+
+func TestRequestCloseTracksCopyAndChanges(t *testing.T) {
+	for _, scenario := range []string{"empty", "uncopied", "copied", "added", "edited", "deleted", "deleted all", "cleared"} {
+		t.Run(scenario, func(t *testing.T) {
+			model := New(nil, "")
+			if scenario != "empty" {
+				first := model.addAnnotation(Annotation{Comment: "first"})
+				second := model.addAnnotation(Annotation{Comment: "second"})
+				if scenario != "uncopied" {
+					// Invoking copy is the completion boundary; no command result is needed.
+					model.HandleIntent(intents.AnnotationCopy{})
+				}
+				switch scenario {
+				case "added":
+					model.addAnnotation(Annotation{Comment: "third"})
+				case "edited":
+					model.updateAnnotationComment(first.ID, "updated")
+				case "deleted":
+					model.removeAnnotation(first.ID)
+				case "deleted all":
+					model.removeAnnotation(first.ID)
+					model.removeAnnotation(second.ID)
+				case "cleared":
+					model.HandleIntent(intents.AnnotationClear{})
+				}
+			}
+			_, canClose := model.RequestClose()
+			wantClose := scenario == "empty" || scenario == "copied" || scenario == "deleted all" || scenario == "cleared"
+			assert.Equal(t, wantClose, canClose)
+			assert.Equal(t, !wantClose, model.confirmation != nil)
+		})
+	}
+}
+
+func TestCloseConfirmationKeepsReviewByDefaultAndOnEscape(t *testing.T) {
+	for _, intent := range []intents.Intent{intents.Apply{}, intents.Cancel{}} {
+		model := New(nil, "")
+		model.addAnnotation(Annotation{Comment: "keep me"})
+		_, canClose := model.RequestClose()
+		require.False(t, canClose)
+		assert.Equal(t, "annotation.confirmation", string(model.Scopes()[0].Name))
+		assert.Contains(t, test.Stripped(test.RenderImmediate(model, 80, 20)), "Discard uncopied comments?")
+
+		cmd, handled := model.HandleIntent(intent)
+		require.True(t, handled)
+		require.NotNil(t, cmd)
+		model.Update(cmd())
+		assert.Nil(t, model.confirmation)
+		require.Len(t, model.annotations.All(), 1)
+		assert.Equal(t, "keep me", model.annotations.All()[0].Comment)
+		_, canClose = model.RequestClose()
+		assert.False(t, canClose, "keeping the review must not mark comments as copied")
+	}
+}
+
+func TestCloseConfirmationDiscardsOnlyWhenSelected(t *testing.T) {
+	model := New(nil, "")
+	model.addAnnotation(Annotation{Comment: "note"})
+	model.RequestClose()
+	for _, intent := range []intents.Intent{intents.AnnotationClear{}, intents.AnnotationCopy{}, intents.AnnotationAdd{}} {
+		cmd, handled := model.HandleIntent(intent)
+		assert.True(t, handled)
+		assert.Nil(t, cmd)
+	}
+	assert.Len(t, model.annotations.All(), 1)
+	assert.Zero(t, model.copiedVersion)
+	assert.False(t, model.editing)
+
+	model.HandleIntent(intents.OptionSelect{Delta: 1})
+	cmd, handled := model.HandleIntent(intents.Apply{})
+	require.True(t, handled)
+	require.NotNil(t, cmd)
+	assert.Equal(t, common.CloseViewMsg{Applied: true}, cmd())
+}

@@ -156,6 +156,11 @@ func (m *Model) closeTopScope(msg common.CloseViewMsg) (tea.Cmd, bool) {
 		return nil, true
 	}
 	if m.annotation != nil {
+		if !msg.Applied {
+			if cmd, canClose := m.annotation.RequestClose(); !canClose {
+				return cmd, true
+			}
+		}
 		m.annotation = nil
 		return nil, true
 	}
