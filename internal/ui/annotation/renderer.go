@@ -88,16 +88,18 @@ func newAnnotationRenderer(dark bool, terminalPalettes ...map[int]string) annota
 }
 
 type annotationViewState struct {
-	document        *reviewDocument
-	annotations     *annotationStore
-	cursor          int
-	selectionAnchor int
-	scrollY         int
-	scrollX         int
-	wrap            bool
-	editing         bool
-	editor          *textarea.Model
-	sourceVersion   uint64
+	document           *reviewDocument
+	annotations        *annotationStore
+	cursor             int
+	selectionAnchor    int
+	scrollY            int
+	scrollX            int
+	wrap               bool
+	editing            bool
+	editor             *textarea.Model
+	sourceVersion      uint64
+	terminalBackground string
+	terminalPalette    map[int]string
 }
 
 func (s annotationViewState) selectedRange() (int, int) {
@@ -150,6 +152,7 @@ func (r *annotationRenderer) Render(
 	result.scrollY = clampScroll(state.scrollY, len(lines), bodyBox.R.Dy())
 
 	selectedStyle := common.DefaultPalette.GetBlended("annotation", "", "", true)
+	contrast := newContrastAdjuster(surface.GetBackground(), state.terminalBackground, state.terminalPalette, dark)
 	selectedStart, selectedEnd := state.selectedRange()
 	cursorY := -1
 	cursorX := contentColumn
@@ -174,10 +177,13 @@ func (r *annotationRenderer) Render(
 				1,
 			)
 		}
-		if line.SourceIndex >= selectedStart &&
-			line.SourceIndex <= selectedEnd &&
-			source.Commentable(line.SourceIndex) {
+		selected := line.SourceIndex >= selectedStart &&
+			line.SourceIndex <= selectedEnd && source.Commentable(line.SourceIndex)
+		if selected {
 			dl.AddPaint(rowRect, selectedStyle, 2)
+		}
+		if line.BackgroundRole != "" || selected {
+			dl.AddEffect(annotationContrastEffect{rect: rowRect, adjuster: contrast})
 		}
 		if !state.editing && line.SourceIndex >= 0 && source.Commentable(line.SourceIndex) {
 			dl.AddInteraction(

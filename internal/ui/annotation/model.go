@@ -455,7 +455,7 @@ func (m *Model) buildDisplayLines(width int) ([]displayLine, int) {
 }
 
 func (m *Model) viewState() annotationViewState {
-	return annotationViewState{
+	state := annotationViewState{
 		document:        &m.document,
 		annotations:     &m.annotations,
 		cursor:          m.cursor,
@@ -467,6 +467,11 @@ func (m *Model) viewState() annotationViewState {
 		editor:          &m.editor,
 		sourceVersion:   m.sourceVersion,
 	}
+	if m.context != nil {
+		state.terminalBackground = m.context.TerminalBackground
+		state.terminalPalette = m.context.TerminalPalette
+	}
+	return state
 }
 
 func (m *Model) addAnnotation(annotation Annotation) Annotation {
