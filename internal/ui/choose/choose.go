@@ -238,6 +238,7 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 		m.listRenderer = render.NewListRenderer(itemScrollMsg{})
 	}
 
+	contrast := common.DefaultPalette.NewForegroundContrast()
 	borderStyle := common.DefaultPalette.GetBorder("choose", "", "border", false, lipgloss.RoundedBorder())
 	surfaceStyle := common.DefaultPalette.Get("choose", "", "", false)
 	textStyle := common.DefaultPalette.Get("choose", "", "text", false)
@@ -359,6 +360,9 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 			line := style.Padding(0, 1).Width(rect.Dx()).Render(label)
 			dl.AddDraw(rect, line, render.ZMenuContent)
 			dl.AddPaint(rect, style, render.ZMenuContent)
+			if index == m.selected {
+				contrast.Add(dl, rect, render.ZMenuContent+1)
+			}
 		},
 		func(index int, _ tea.Mouse) tea.Msg { return itemClickMsg{Index: index} },
 	)

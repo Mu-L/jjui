@@ -1,11 +1,10 @@
 package annotation
 
 import (
-	"math"
-
 	"charm.land/lipgloss/v2"
 	uv "github.com/charmbracelet/ultraviolet"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/idursun/jjui/internal/ui/colorcontrast"
 	"github.com/idursun/jjui/internal/ui/layout"
 )
 
@@ -13,87 +12,22 @@ const (
 	// Leave headroom for syntax colours instead of forcing every token to white
 	// or black. The final foreground/background pair still needs 4.5:1.
 	highlightTextContrast = 7.0
-	syntaxTextContrast    = 4.5
+	syntaxTextContrast    = colorcontrast.Minimum
 )
 
-type contrastRGB [3]uint8
-
-func (c contrastRGB) luminance() float64 {
-	var linear [3]float64
-	for i, v := range c {
-		s := float64(v) / 255
-		if s <= 0.04045 {
-			linear[i] = s / 12.92
-		} else {
-			linear[i] = math.Pow((s+0.055)/1.055, 2.4)
-		}
-	}
-	return 0.2126*linear[0] + 0.7152*linear[1] + 0.0722*linear[2]
-}
-
-func contrastRatio(a, b contrastRGB) float64 {
-	l1, l2 := a.luminance(), b.luminance()
-	return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
-}
-
-func (c contrastRGB) mix(target contrastRGB, amount float64) contrastRGB {
-	var result contrastRGB
-	for i := range result {
-		result[i] = uint8(math.Round(float64(c[i]) + (float64(target[i])-float64(c[i]))*amount))
-	}
-	return result
-}
-
-// towardContrast finds the smallest tint or shade that reaches the target.
-// The endpoint must satisfy the ratio. Search the rounded, displayed colours,
-// not just floating-point values which may round below the requested contrast.
-func towardContrast(original, target, against contrastRGB, ratio float64) contrastRGB {
-	low, high := 0.0, 1.0
-	for range 16 {
-		mid := (low + high) / 2
-		if contrastRatio(original.mix(target, mid), against) >= ratio {
-			high = mid
-		} else {
-			low = mid
-		}
-	}
-	return original.mix(target, high)
-}
-
-func readableForeground(foreground, background contrastRGB) contrastRGB {
-	if contrastRatio(foreground, background) >= syntaxTextContrast {
-		return foreground
-	}
-	var best contrastRGB
-	bestDistance := math.Inf(1)
-	for _, edge := range []contrastRGB{{0, 0, 0}, {255, 255, 255}} {
-		if contrastRatio(edge, background) < syntaxTextContrast {
-			continue
-		}
-		candidate := towardContrast(foreground, edge, background, syntaxTextContrast)
-		distance := 0.0
-		for i := range candidate {
-			delta := float64(candidate[i]) - float64(foreground[i])
-			distance += delta * delta
-		}
-		if distance < bestDistance {
-			best, bestDistance = candidate, distance
-		}
-	}
-	return best
-}
+type contrastRGB = colorcontrast.RGB
 
 func readableBackground(background, surface contrastRGB) contrastRGB {
 	black, white := contrastRGB{0, 0, 0}, contrastRGB{255, 255, 255}
 	edge := white
-	if contrastRatio(black, surface) > contrastRatio(white, surface) {
+	if colorcontrast.Ratio(black, surface) > colorcontrast.Ratio(white, surface) {
 		edge = black
 	}
-	if contrastRatio(edge, background) >= highlightTextContrast ||
-		contrastRatio(edge, surface) < highlightTextContrast {
+	if colorcontrast.Ratio(edge, background) >= highlightTextContrast ||
+		colorcontrast.Ratio(edge, surface) < highlightTextContrast {
 		return background
 	}
-	return towardContrast(background, surface, edge, highlightTextContrast)
+	return colorcontrast.Toward(background, surface, edge, highlightTextContrast)
 }
 
 type contrastPair struct {
@@ -131,10 +65,6 @@ func (a *contrastAdjuster) rgb(value ansi.Color) contrastRGB {
 	return contrastRGB{c.Red(), c.Green(), c.Blue()}
 }
 
-func (c contrastRGB) color() ansi.Color {
-	return ansi.RGBColor{R: c[0], G: c[1], B: c[2]}
-}
-
 func (a *contrastAdjuster) adjust(pair contrastPair) contrastPair {
 	if result, ok := a.pairs[pair]; ok {
 		return result
@@ -143,13 +73,13 @@ func (a *contrastAdjuster) adjust(pair contrastPair) contrastPair {
 	bg := a.rgb(pair.background)
 	adjustedBG := readableBackground(bg, a.surface)
 	if adjustedBG != bg {
-		result.background = adjustedBG.color()
+		result.background = adjustedBG.Color()
 	}
 	if pair.foreground != nil {
 		fg := a.rgb(pair.foreground)
-		adjustedFG := readableForeground(fg, adjustedBG)
+		adjustedFG := colorcontrast.Foreground(fg, adjustedBG)
 		if adjustedFG != fg {
-			result.foreground = adjustedFG.color()
+			result.foreground = adjustedFG.Color()
 		}
 	}
 	a.pairs[pair] = result
