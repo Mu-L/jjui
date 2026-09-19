@@ -8,9 +8,9 @@ import (
 	"github.com/alecthomas/chroma/v2"
 	uv "github.com/charmbracelet/ultraviolet"
 	"github.com/idursun/jjui/internal/config"
-	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -70,11 +70,11 @@ func TestHighlightCacheRetainsTheCurrentSource(t *testing.T) {
 }
 
 func TestSyntaxStyleUsesThemeAndTerminalPalette(t *testing.T) {
-	previous := common.DefaultPalette
-	t.Cleanup(func() { common.DefaultPalette = previous })
-	common.DefaultPalette = common.NewPalette()
+	previous := theme.DefaultPalette
+	t.Cleanup(func() { theme.DefaultPalette = previous })
+	theme.DefaultPalette = theme.NewPalette()
 	bold := false
-	common.DefaultPalette.Update(map[string]config.Color{
+	theme.DefaultPalette.Update(map[string]config.Color{
 		"syntax keyword": {Fg: "magenta", Bold: &bold, Bg: "red"},
 		"syntax text":    {Fg: "#eeeeee"},
 		"syntax string":  {Fg: "#123456"},
@@ -90,9 +90,9 @@ func TestSyntaxStyleUsesThemeAndTerminalPalette(t *testing.T) {
 }
 
 func TestSyntaxClassFallsBackToType(t *testing.T) {
-	previous := common.DefaultPalette
-	t.Cleanup(func() { common.DefaultPalette = previous })
-	common.DefaultPalette = common.NewPalette()
+	previous := theme.DefaultPalette
+	t.Cleanup(func() { theme.DefaultPalette = previous })
+	theme.DefaultPalette = theme.NewPalette()
 	bold := true
 	for _, tc := range []struct {
 		name       string
@@ -111,7 +111,7 @@ func TestSyntaxClassFallsBackToType(t *testing.T) {
 			if tc.name != "absent" {
 				colors["syntax class"] = tc.class
 			}
-			common.DefaultPalette.Update(colors)
+			theme.DefaultPalette.Update(colors)
 			style := syntaxStyle(true, nil)
 			assert.Equal(t, chroma.MustParseColour(tc.wantColour), style.Get(chroma.NameClass).Colour)
 			assert.Equal(t, chroma.MustParseColour("#123456"), style.Get(chroma.KeywordType).Colour)

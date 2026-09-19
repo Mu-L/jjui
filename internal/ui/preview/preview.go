@@ -15,6 +15,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 var _ common.ImmediateModel = (*Model)(nil)
@@ -181,7 +182,7 @@ func (m *Model) SetContent(content string) {
 }
 
 func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
-	surfaceStyle := common.DefaultPalette.Get("preview", "", "", false)
+	surfaceStyle := theme.DefaultPalette.Get("preview", "", "", false)
 	m.view.SetWidth(box.R.Dx())
 	m.view.SetHeight(box.R.Dy())
 	dl.AddFill(box.R, ' ', surfaceStyle, render.ZPreview)

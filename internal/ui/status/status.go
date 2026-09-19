@@ -19,6 +19,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 var expandFallback = help.Entry{Label: "?", Desc: "expand status"}
@@ -222,10 +223,10 @@ func (m *Model) loadEditingSuggestions() {
 
 // ViewStatusRect renders the mode and keybinding help row.
 func (m *Model) ViewStatusRect(dl *render.DisplayContext, box layout.Box) {
-	shortcutStyle := common.DefaultPalette.Get("status", "", "shortcut", false)
-	dimmedStyle := common.DefaultPalette.Get("status", "", "dimmed", false)
-	textStyle := common.DefaultPalette.Get("status", "", "text", false)
-	titleStyle := common.DefaultPalette.Get("status", "", "title", false).PaddingLeft(1).PaddingRight(1)
+	shortcutStyle := theme.DefaultPalette.Get("status", "", "shortcut", false)
+	dimmedStyle := theme.DefaultPalette.Get("status", "", "dimmed", false)
+	textStyle := theme.DefaultPalette.Get("status", "", "text", false)
+	titleStyle := theme.DefaultPalette.Get("status", "", "title", false).PaddingLeft(1).PaddingRight(1)
 
 	width := box.R.Dx()
 	dl.AddFill(box.R, ' ', textStyle, 0)
@@ -248,9 +249,9 @@ func (m *Model) ViewInputRect(dl *render.DisplayContext, box layout.Box) {
 		return
 	}
 
-	dimmedStyle := common.DefaultPalette.Get("status", "", "dimmed", false)
-	textStyle := common.DefaultPalette.Get("status", "", "text", false)
-	titleStyle := common.DefaultPalette.Get("status", "", "title", false).PaddingLeft(1).PaddingRight(1)
+	dimmedStyle := theme.DefaultPalette.Get("status", "", "dimmed", false)
+	textStyle := theme.DefaultPalette.Get("status", "", "text", false)
+	titleStyle := theme.DefaultPalette.Get("status", "", "title", false).PaddingLeft(1).PaddingRight(1)
 	inputStyles := m.input.Styles()
 	inputStyles.Focused.Text = textStyle
 	inputStyles.Focused.Suggestion = dimmedStyle

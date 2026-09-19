@@ -16,6 +16,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
 	"github.com/idursun/jjui/internal/ui/revisions"
+	"github.com/idursun/jjui/internal/ui/theme"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -210,7 +211,7 @@ func (fzf *fuzzyFiles) ViewRect(dl *render.DisplayContext, box layout.Box) {
 	}
 	_, h := lipgloss.Size(content)
 	rect := layout.Rect(box.R.Min.X, box.R.Max.Y-h, box.R.Dx(), h)
-	background := common.DefaultPalette.Get("status", "", "text", false)
+	background := theme.DefaultPalette.Get("status", "", "text", false)
 	dl.AddFill(rect, ' ', background, render.ZFuzzyOverlay)
 	dl.AddDraw(rect, content, render.ZFuzzyOverlay)
 	dl.AddHighlight(rect, background, render.ZFuzzyOverlay)
@@ -218,7 +219,7 @@ func (fzf *fuzzyFiles) ViewRect(dl *render.DisplayContext, box layout.Box) {
 	shown := min(len(fzf.matches), fzf.max)
 	if fzf.cursor >= 0 && fzf.cursor < shown {
 		selected := layout.Rect(rect.Min.X, rect.Max.Y-1-fzf.cursor, rect.Dx(), 1).Intersect(box.R)
-		common.DefaultPalette.NewForegroundContrast().Add(dl, selected, render.ZFuzzyOverlay+1)
+		render.NewForegroundContrast(theme.DefaultPalette.ResolveRGB).Add(dl, selected, render.ZFuzzyOverlay+1)
 	}
 }
 
@@ -227,7 +228,7 @@ func (fzf *fuzzyFiles) viewContent() string {
 	if shown == 0 {
 		return ""
 	}
-	title := common.DefaultPalette.Get("status", "", "title", false).Render(
+	title := theme.DefaultPalette.Get("status", "", "title", false).Render(
 		"  ",
 		strconv.Itoa(shown),
 		"of",

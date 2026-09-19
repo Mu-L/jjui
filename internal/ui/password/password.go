@@ -9,6 +9,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 var _ common.ImmediateModel = (*Model)(nil)
@@ -83,11 +84,11 @@ func (m *Model) Update(msg tea.Msg) tea.Cmd {
 
 func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 	dl.AddBackdrop(box.R, render.ZPassword-1)
-	borderStyle := common.DefaultPalette.GetBorder("password", "", "border", false, lipgloss.NormalBorder()).Padding(1)
-	surfaceStyle := common.DefaultPalette.Get("password", "", "", false)
+	borderStyle := theme.DefaultPalette.GetBorder("password", "", "border", false, lipgloss.NormalBorder()).Padding(1)
+	surfaceStyle := theme.DefaultPalette.Get("password", "", "", false)
 	ps := m.textInput.Styles()
-	ps.Focused.Prompt = common.DefaultPalette.Get("password", "", "title", false)
-	ps.Blurred.Prompt = common.DefaultPalette.Get("password", "", "title", false)
+	ps.Focused.Prompt = theme.DefaultPalette.Get("password", "", "title", false)
+	ps.Blurred.Prompt = theme.DefaultPalette.Get("password", "", "title", false)
 	m.textInput.SetStyles(ps)
 
 	v := borderStyle.Width(max(box.R.Dx()-2, 0)).Render(m.textInput.View())

@@ -17,6 +17,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 type RevealRevisionMsg struct {
@@ -179,7 +180,7 @@ func (m *Model) Scopes() []common.Scope {
 }
 
 func New(c *context.MainContext) *Model {
-	palette := common.DefaultPalette
+	palette := theme.DefaultPalette
 	s := styles{
 		title:              palette.Get("", "", "title", false),
 		text:               palette.Get("picker", "", "text", false),

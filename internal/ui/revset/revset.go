@@ -13,6 +13,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 type EditRevSetMsg struct{}
@@ -353,9 +354,9 @@ func (m *Model) HandleIntent(intent intents.Intent) (tea.Cmd, bool) {
 
 func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 
-	titleStyle := common.DefaultPalette.Get("revset", "", "title", false)
-	textStyle := common.DefaultPalette.Get("revset", "", "text", false)
-	completionDimmed := common.DefaultPalette.Get("revset", "completion", "dimmed", false)
+	titleStyle := theme.DefaultPalette.Get("revset", "", "title", false)
+	textStyle := theme.DefaultPalette.Get("revset", "", "text", false)
+	completionDimmed := theme.DefaultPalette.Get("revset", "completion", "dimmed", false)
 
 	tb := dl.Text(box.R.Min.X, box.R.Min.Y, render.ZFuzzyInput)
 	tb.Styled("revset: ", titleStyle)
@@ -399,8 +400,8 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 	overlayWidth := box.R.Dx()
 	outerBox := layout.NewBox(layout.Rect(box.R.Min.X, box.R.Max.Y, overlayWidth, overlayHeight))
 	// Fill the background to prevent underlying content from showing through
-	dl.AddFill(outerBox.R, ' ', common.DefaultPalette.Get("revset", "completion", "", false), render.ZRevsetOverlay-1)
-	completionSelected := common.DefaultPalette.GetBlended("revset", "completion", "", true)
+	dl.AddFill(outerBox.R, ' ', theme.DefaultPalette.Get("revset", "completion", "", false), render.ZRevsetOverlay-1)
+	completionSelected := theme.DefaultPalette.GetBlended("revset", "completion", "", true)
 	m.listRenderer.Render(
 		dl,
 		outerBox,
@@ -413,9 +414,9 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 				return
 			}
 			isSelected := index == m.selectedIndex
-			getStyle := common.DefaultPalette.Get
+			getStyle := theme.DefaultPalette.Get
 			if isSelected {
-				getStyle = common.DefaultPalette.GetBlended
+				getStyle = theme.DefaultPalette.GetBlended
 			}
 
 			item := items[index]

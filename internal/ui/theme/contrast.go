@@ -1,17 +1,11 @@
-// Package colorcontrast adjusts resolved RGB colours for readable text.
-package colorcontrast
+package theme
 
 import (
 	"math"
-
-	"github.com/charmbracelet/x/ansi"
 )
 
 // Minimum is the contrast target for ordinary text.
 const Minimum = 4.5
-
-// RGB is an opaque, resolved sRGB colour.
-type RGB [3]uint8
 
 // Luminance returns relative luminance in linear light.
 func (c RGB) Luminance() float64 {
@@ -31,14 +25,6 @@ func (c RGB) Luminance() float64 {
 func Ratio(a, b RGB) float64 {
 	l1, l2 := a.Luminance(), b.Luminance()
 	return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
-}
-
-func (c RGB) mix(target RGB, amount float64) RGB {
-	var result RGB
-	for i := range result {
-		result[i] = uint8(math.Round(float64(c[i]) + (float64(target[i])-float64(c[i]))*amount))
-	}
-	return result
 }
 
 // Toward finds the smallest tint or shade that reaches the target.
@@ -82,4 +68,18 @@ func Foreground(foreground, background RGB) RGB {
 	return best
 }
 
-func (c RGB) Color() ansi.RGBColor { return ansi.RGBColor{R: c[0], G: c[1], B: c[2]} }
+// HighlightTextContrast leaves headroom for syntax colours.
+const HighlightTextContrast = 7.0
+
+func HighlightBackground(background, surface RGB) RGB {
+	black, white := RGB{0, 0, 0}, RGB{255, 255, 255}
+	edge := white
+	if Ratio(black, surface) > Ratio(white, surface) {
+		edge = black
+	}
+	if Ratio(edge, background) >= HighlightTextContrast ||
+		Ratio(edge, surface) < HighlightTextContrast {
+		return background
+	}
+	return Toward(background, surface, edge, HighlightTextContrast)
+}

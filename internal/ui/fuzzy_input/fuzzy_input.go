@@ -11,11 +11,11 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/idursun/jjui/internal/config"
-	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/fuzzy_search"
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -177,7 +177,7 @@ func (fzf *model) viewContent() string {
 		strconv.Itoa(matches),
 		strconv.Itoa(fzf.Len()),
 	)
-	title = common.DefaultPalette.Get("status", "", "title", false).Render(title)
+	title = theme.DefaultPalette.Get("status", "", "title", false).Render(title)
 	return lipgloss.JoinVertical(0, title, view)
 }
 

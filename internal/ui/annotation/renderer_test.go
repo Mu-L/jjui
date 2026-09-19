@@ -8,6 +8,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -61,10 +62,10 @@ func TestLargeDiffDoesNotThrashHighlightCacheOnLayoutChange(t *testing.T) {
 }
 
 func TestThemeChangeInvalidatesRenderedData(t *testing.T) {
-	previous := common.DefaultPalette
-	t.Cleanup(func() { common.DefaultPalette = previous })
-	common.DefaultPalette = common.NewPalette()
-	common.DefaultPalette.Update(map[string]config.Color{"syntax keyword": {Fg: "#123456"}})
+	previous := theme.DefaultPalette
+	t.Cleanup(func() { theme.DefaultPalette = previous })
+	theme.DefaultPalette = theme.NewPalette()
+	theme.DefaultPalette.Update(map[string]config.Color{"syntax keyword": {Fg: "#123456"}})
 	model := mouseTestModel(1)
 	model.document.files[0].Patch.Lines[0].Content = "package main"
 	model.renderer = newAnnotationRenderer(false)
@@ -72,7 +73,7 @@ func TestThemeChangeInvalidatesRenderedData(t *testing.T) {
 	before := render.NewDisplayContext()
 	model.ViewRect(before, box)
 	oldHighlighter := model.renderer.highlighter
-	common.DefaultPalette.Update(map[string]config.Color{"syntax keyword": {Fg: "#abcdef"}})
+	theme.DefaultPalette.Update(map[string]config.Color{"syntax keyword": {Fg: "#abcdef"}})
 	model.Update(common.ThemeChangedMsg{})
 	after := render.NewDisplayContext()
 	model.ViewRect(after, box)

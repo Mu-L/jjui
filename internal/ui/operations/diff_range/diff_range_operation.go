@@ -15,6 +15,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/operations"
 	"github.com/idursun/jjui/internal/ui/operations/target_picker"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 var _ operations.Operation = (*Operation)(nil)
@@ -130,16 +131,16 @@ func (o *Operation) Render(commit *jj.Commit, renderPosition operations.RenderPo
 	}
 
 	if renderPosition == operations.RenderPositionBefore && o.from != nil && commit.GetChangeId() == o.from.GetChangeId() {
-		sourceMarkerStyle := common.DefaultPalette.Get("diff_range", "", "source_marker", false)
-		dimmedStyle := common.DefaultPalette.Get("diff_range", "", "dimmed", false)
+		sourceMarkerStyle := theme.DefaultPalette.Get("diff_range", "", "source_marker", false)
+		dimmedStyle := theme.DefaultPalette.Get("diff_range", "", "dimmed", false)
 		return lipgloss.JoinHorizontal(0, sourceMarkerStyle.Render("<< from >>"), dimmedStyle.Render(" excluding this revision"))
 	}
 
 renderTo:
 	if renderPosition == operations.RenderPositionBefore && o.to != nil && commit.GetChangeId() == o.to.GetChangeId() {
-		targetMarkerStyle := common.DefaultPalette.Get("diff_range", "", "target_marker", false).PaddingRight(1)
-		changeIdStyle := common.DefaultPalette.Get("diff_range", "", "change_id", false)
-		dimmedStyle := common.DefaultPalette.Get("diff_range", "", "dimmed", false)
+		targetMarkerStyle := theme.DefaultPalette.Get("diff_range", "", "target_marker", false).PaddingRight(1)
+		changeIdStyle := theme.DefaultPalette.Get("diff_range", "", "change_id", false)
+		dimmedStyle := theme.DefaultPalette.Get("diff_range", "", "dimmed", false)
 		commandHint := lipgloss.JoinHorizontal(0, dimmedStyle.Render(" jj diff --from "), changeIdStyle.Render(o.from.GetChangeId()), dimmedStyle.Render(" --to "), changeIdStyle.Render(o.to.GetChangeId()))
 		return lipgloss.JoinHorizontal(0, targetMarkerStyle.Render("<< to >>"), commandHint)
 	}

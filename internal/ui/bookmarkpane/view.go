@@ -5,9 +5,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 func (m *Model) renderTitle(dl *render.DisplayContext, box layout.Box) {
@@ -26,7 +26,7 @@ func (m *Model) renderRemotes(dl *render.DisplayContext, box layout.Box) {
 	for idx, remoteName := range m.remoteNames {
 		style := m.styles.dimmed
 		if idx == m.selectedRemoteIdx {
-			style = common.DefaultPalette.Get("bookmarks", "menu", "", true)
+			style = theme.DefaultPalette.Get("bookmarks", "menu", "", true)
 		}
 		tb.Clickable(remoteName, style, RemoteClickedMsg{Index: idx}).Styled(" ", m.styles.text)
 	}
@@ -35,8 +35,8 @@ func (m *Model) renderRemotes(dl *render.DisplayContext, box layout.Box) {
 
 func (m *Model) renderFilter(dl *render.DisplayContext, box layout.Box) {
 	if m.filterState == filterEditing {
-		menuTextStyle := common.DefaultPalette.Get("bookmarks", "menu", "text", false)
-		menuMatchedStyle := common.DefaultPalette.Get("bookmarks", "menu", "matched", false)
+		menuTextStyle := theme.DefaultPalette.Get("bookmarks", "menu", "text", false)
+		menuMatchedStyle := theme.DefaultPalette.Get("bookmarks", "menu", "matched", false)
 		fis := m.filterInput.Styles()
 		fis.Focused.Prompt = menuMatchedStyle.PaddingLeft(1)
 		fis.Focused.Text = menuTextStyle
@@ -89,7 +89,7 @@ func (m *Model) renderConfirmation(dl *render.DisplayContext, box layout.Box) {
 	if box.R.Dx() <= 0 || box.R.Dy() <= 0 || m.confirmation == nil {
 		return
 	}
-	m.confirmation.Styles.Border = common.DefaultPalette.GetBorder("confirmation", "", "border", false, lipgloss.NormalBorder()).Padding(1)
+	m.confirmation.Styles.Border = theme.DefaultPalette.GetBorder("confirmation", "", "border", false, lipgloss.NormalBorder()).Padding(1)
 	v := m.confirmation.View()
 	w, h := lipgloss.Size(v)
 	pw, ph := box.R.Dx(), box.R.Dy()

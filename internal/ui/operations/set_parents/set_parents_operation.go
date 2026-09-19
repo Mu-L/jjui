@@ -14,6 +14,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/operations"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 var _ operations.Operation = (*Model)(nil)
@@ -119,9 +120,9 @@ func (m *Model) Render(commit *jj.Commit, renderPosition operations.RenderPositi
 	if renderPosition != operations.RenderBeforeChangeId {
 		return ""
 	}
-	sourceMarker := common.DefaultPalette.Get("set_parents", "", "source_marker", false)
-	targetMarker := common.DefaultPalette.Get("set_parents", "", "target_marker", false)
-	dimmedStyle := common.DefaultPalette.Get("set_parents", "", "dimmed", false)
+	sourceMarker := theme.DefaultPalette.Get("set_parents", "", "source_marker", false)
+	targetMarker := theme.DefaultPalette.Get("set_parents", "", "target_marker", false)
+	dimmedStyle := theme.DefaultPalette.Get("set_parents", "", "dimmed", false)
 
 	if slices.Contains(m.toAdd, commit.GetChangeId()) {
 		return sourceMarker.Render("<< add >>")

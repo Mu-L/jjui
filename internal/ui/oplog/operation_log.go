@@ -15,6 +15,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 type updateOpLogMsg struct {
@@ -249,9 +250,9 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 		return len(m.rows[index].Lines)
 	}
 
-	textStyle := common.DefaultPalette.Get("oplog", "", "text", false)
-	selectedStyle := common.DefaultPalette.GetBlended("oplog", "", "", true)
-	matchedStyle := common.DefaultPalette.Get("oplog", "", "matched", false)
+	textStyle := theme.DefaultPalette.Get("oplog", "", "text", false)
+	selectedStyle := theme.DefaultPalette.GetBlended("oplog", "", "", true)
+	matchedStyle := theme.DefaultPalette.Get("oplog", "", "matched", false)
 
 	renderItem := func(dl *render.DisplayContext, index int, itemRect layout.Rectangle) {
 		row := m.rows[index]

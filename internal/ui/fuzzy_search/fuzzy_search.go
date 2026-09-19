@@ -9,6 +9,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/idursun/jjui/internal/ui/common"
+	"github.com/idursun/jjui/internal/ui/theme"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -46,10 +47,10 @@ func SelectedMatch(model Model) string {
 func View(fzf Model) string {
 	shown := []string{}
 	max := fzf.Max()
-	dimmedStyle := common.DefaultPalette.Get("status", "", "dimmed", false)
-	dimmedMatchStyle := common.DefaultPalette.Get("status", "", "shortcut", false)
-	selectedStyle := common.DefaultPalette.GetBlended("", "", "", true)
-	selectedMatchStyle := common.DefaultPalette.Get("status", "", "title", false)
+	dimmedStyle := theme.DefaultPalette.Get("status", "", "dimmed", false)
+	dimmedMatchStyle := theme.DefaultPalette.Get("status", "", "shortcut", false)
+	selectedStyle := theme.DefaultPalette.GetBlended("", "", "", true)
+	selectedMatchStyle := theme.DefaultPalette.Get("status", "", "title", false)
 	selected := fzf.SelectedMatch()
 	for i, match := range fzf.Matches() {
 		if i == max {

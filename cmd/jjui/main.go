@@ -15,17 +15,16 @@ import (
 	"sync/atomic"
 	"unicode"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 	"github.com/idursun/jjui/internal/askpass"
-	"github.com/idursun/jjui/internal/ui/common"
-
 	"github.com/idursun/jjui/internal/config"
 	"github.com/idursun/jjui/internal/scripting"
-	"github.com/idursun/jjui/internal/ui/context"
-
-	tea "charm.land/bubbletea/v2"
 	"github.com/idursun/jjui/internal/ui"
+	"github.com/idursun/jjui/internal/ui/common"
+	"github.com/idursun/jjui/internal/ui/context"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 var Version string
@@ -220,21 +219,21 @@ func run() int {
 		}
 	}
 
-	var theme config.ResolvedTheme
+	var resolvedTheme config.ResolvedTheme
 	if !appContext.TerminalThemeDetected {
 		appContext.TerminalHasDarkBackground = lipgloss.HasDarkBackground(os.Stdin, os.Stdout)
 		appContext.TerminalThemeDetected = true
 	}
 
-	theme, err = config.ResolveTheme(appContext.TerminalHasDarkBackground, appContext.JJConfig.GetApplicableColors())
+	resolvedTheme, err = config.ResolveTheme(appContext.TerminalHasDarkBackground, appContext.JJConfig.GetApplicableColors())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading theme: %v\n", err)
 		return 1
 	}
-	appContext.ThemeBackgroundBlend = theme.BackgroundBlend
-	common.DefaultPalette.Update(theme.Colors)
-	common.DefaultPalette.ConfigureBackgroundBlend(
-		theme.BackgroundBlend,
+	appContext.ThemeBackgroundBlend = resolvedTheme.BackgroundBlend
+	theme.DefaultPalette.Update(resolvedTheme.Colors)
+	theme.DefaultPalette.ConfigureBackgroundBlend(
+		resolvedTheme.BackgroundBlend,
 		appContext.TerminalBackground,
 		appContext.TerminalPalette,
 	)

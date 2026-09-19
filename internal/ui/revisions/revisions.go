@@ -11,38 +11,37 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/idursun/jjui/internal/ui/actions"
-	"github.com/idursun/jjui/internal/ui/bindings"
-	"github.com/idursun/jjui/internal/ui/intents"
-	"github.com/idursun/jjui/internal/ui/layout"
-	"github.com/idursun/jjui/internal/ui/operations/ace_jump"
-	"github.com/idursun/jjui/internal/ui/operations/diff_range"
-	"github.com/idursun/jjui/internal/ui/operations/duplicate"
-	"github.com/idursun/jjui/internal/ui/operations/new_between"
-	"github.com/idursun/jjui/internal/ui/operations/revert"
-	"github.com/idursun/jjui/internal/ui/operations/set_parents"
-	"github.com/idursun/jjui/internal/ui/operations/target_picker"
-	"github.com/idursun/jjui/internal/ui/render"
-
-	"github.com/idursun/jjui/internal/parser"
-	"github.com/idursun/jjui/internal/screen"
-	"github.com/idursun/jjui/internal/ui/operations/describe"
-
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/idursun/jjui/internal/config"
 	"github.com/idursun/jjui/internal/jj"
+	"github.com/idursun/jjui/internal/parser"
+	"github.com/idursun/jjui/internal/screen"
+	"github.com/idursun/jjui/internal/ui/actions"
+	"github.com/idursun/jjui/internal/ui/bindings"
 	"github.com/idursun/jjui/internal/ui/common"
 	appContext "github.com/idursun/jjui/internal/ui/context"
 	"github.com/idursun/jjui/internal/ui/graph"
+	"github.com/idursun/jjui/internal/ui/intents"
+	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/operations"
 	"github.com/idursun/jjui/internal/ui/operations/abandon"
 	"github.com/idursun/jjui/internal/ui/operations/absorb"
+	"github.com/idursun/jjui/internal/ui/operations/ace_jump"
 	"github.com/idursun/jjui/internal/ui/operations/bookmark"
+	"github.com/idursun/jjui/internal/ui/operations/describe"
 	"github.com/idursun/jjui/internal/ui/operations/details"
+	"github.com/idursun/jjui/internal/ui/operations/diff_range"
+	"github.com/idursun/jjui/internal/ui/operations/duplicate"
 	"github.com/idursun/jjui/internal/ui/operations/evolog"
+	"github.com/idursun/jjui/internal/ui/operations/new_between"
 	"github.com/idursun/jjui/internal/ui/operations/rebase"
+	"github.com/idursun/jjui/internal/ui/operations/revert"
+	"github.com/idursun/jjui/internal/ui/operations/set_parents"
 	"github.com/idursun/jjui/internal/ui/operations/squash"
+	"github.com/idursun/jjui/internal/ui/operations/target_picker"
+	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 var (
@@ -1256,10 +1255,10 @@ func (m *Model) updateGraphRows(rows []parser.Row, selectedRevision string, requ
 }
 
 func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
-	textStyle := common.DefaultPalette.Get("revisions", "", "text", false)
-	dimmedStyle := common.DefaultPalette.Get("revisions", "", "dimmed", false)
-	selectedStyle := common.DefaultPalette.GetBlended("revisions", "", "", true)
-	matchedStyle := common.DefaultPalette.Get("revisions", "", "matched", false)
+	textStyle := theme.DefaultPalette.Get("revisions", "", "text", false)
+	dimmedStyle := theme.DefaultPalette.Get("revisions", "", "dimmed", false)
+	selectedStyle := theme.DefaultPalette.GetBlended("revisions", "", "", true)
+	matchedStyle := theme.DefaultPalette.Get("revisions", "", "matched", false)
 
 	m.displayContextRenderer.textStyle = textStyle
 	m.displayContextRenderer.dimmedStyle = dimmedStyle

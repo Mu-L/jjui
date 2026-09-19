@@ -15,6 +15,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 type itemCategory string
@@ -303,11 +304,11 @@ func (m *Model) executeDefaultForFilter(kind intents.GitFilterKind) tea.Cmd {
 }
 
 func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
-	menuTitleStyle := common.DefaultPalette.Get("git", "", "title", false)
-	menuTextStyle := common.DefaultPalette.Get("git", "", "text", false)
-	inputTextStyle := common.DefaultPalette.Get("git", "input", "text", false)
-	inputMatchedStyle := common.DefaultPalette.Get("git", "input", "matched", false)
-	borderStyle := common.DefaultPalette.GetBorder("git", "", "border", false, lipgloss.NormalBorder())
+	menuTitleStyle := theme.DefaultPalette.Get("git", "", "title", false)
+	menuTextStyle := theme.DefaultPalette.Get("git", "", "text", false)
+	inputTextStyle := theme.DefaultPalette.Get("git", "input", "text", false)
+	inputMatchedStyle := theme.DefaultPalette.Get("git", "input", "matched", false)
+	borderStyle := theme.DefaultPalette.GetBorder("git", "", "border", false, lipgloss.NormalBorder())
 
 	pw, ph := box.R.Dx(), box.R.Dy()
 	contentWidth := max(min(pw, 80)-4, 0)
@@ -364,11 +365,11 @@ func (m *Model) renderRemotes(dl *render.DisplayContext, lineBox layout.Box) {
 		return
 	}
 
-	remotePromptStyle := common.DefaultPalette.Get("git", "remote", "title", false)
-	remoteTextStyle := common.DefaultPalette.Get("git", "remote", "text", false)
-	remoteDimmedStyle := common.DefaultPalette.Get("git", "remote", "dimmed", false)
-	remoteSelectedStyle := common.DefaultPalette.GetBlended("git", "remote", "", true)
-	noRemoteStyle := common.DefaultPalette.Get("git", "remote", "error", false)
+	remotePromptStyle := theme.DefaultPalette.Get("git", "remote", "title", false)
+	remoteTextStyle := theme.DefaultPalette.Get("git", "remote", "text", false)
+	remoteDimmedStyle := theme.DefaultPalette.Get("git", "remote", "dimmed", false)
+	remoteSelectedStyle := theme.DefaultPalette.GetBlended("git", "remote", "", true)
+	noRemoteStyle := theme.DefaultPalette.Get("git", "remote", "error", false)
 
 	dl.AddFill(lineBox.R, ' ', remoteTextStyle, render.ZMenuContent)
 
@@ -522,8 +523,8 @@ func (m *Model) renderFilterView(dl *render.DisplayContext, box layout.Box) {
 		return
 	}
 	width := box.R.Dx()
-	menuTextStyle := common.DefaultPalette.Get("git", "", "text", false)
-	menuMatchedStyle := common.DefaultPalette.Get("git", "", "matched", false)
+	menuTextStyle := theme.DefaultPalette.Get("git", "", "text", false)
+	menuMatchedStyle := theme.DefaultPalette.Get("git", "", "matched", false)
 	filterStyle := menuTextStyle.PaddingLeft(1)
 	filterValueStyle := menuMatchedStyle
 
@@ -591,9 +592,9 @@ func renderItem(dl *render.DisplayContext, rect layout.Rectangle, width int, sho
 	}
 
 	isSelected := index == cursor
-	getStyle := common.DefaultPalette.Get
+	getStyle := theme.DefaultPalette.Get
 	if isSelected {
-		getStyle = common.DefaultPalette.GetBlended
+		getStyle = theme.DefaultPalette.GetBlended
 	}
 	textStyle := getStyle("git", "", "text", isSelected)
 	descStyle := getStyle("git", "", "dimmed", isSelected)

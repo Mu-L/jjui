@@ -8,40 +8,39 @@ import (
 	"strings"
 	"time"
 
+	tea "charm.land/bubbletea/v2"
 	uv "github.com/charmbracelet/ultraviolet"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/idursun/jjui/internal/config"
+	"github.com/idursun/jjui/internal/jj"
 	"github.com/idursun/jjui/internal/scripting"
 	"github.com/idursun/jjui/internal/ui/actionmeta"
 	"github.com/idursun/jjui/internal/ui/actions"
 	"github.com/idursun/jjui/internal/ui/annotation"
 	keybindings "github.com/idursun/jjui/internal/ui/bindings"
-	"github.com/idursun/jjui/internal/ui/dispatch"
-	"github.com/idursun/jjui/internal/ui/flash"
-	"github.com/idursun/jjui/internal/ui/intents"
-	"github.com/idursun/jjui/internal/ui/layout"
-	"github.com/idursun/jjui/internal/ui/password"
-	"github.com/idursun/jjui/internal/ui/render"
-
-	tea "charm.land/bubbletea/v2"
-	"github.com/idursun/jjui/internal/config"
-	"github.com/idursun/jjui/internal/jj"
 	"github.com/idursun/jjui/internal/ui/bookmarks"
 	"github.com/idursun/jjui/internal/ui/choose"
 	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/context"
 	"github.com/idursun/jjui/internal/ui/diff"
+	"github.com/idursun/jjui/internal/ui/dispatch"
 	"github.com/idursun/jjui/internal/ui/exec_process"
+	"github.com/idursun/jjui/internal/ui/flash"
 	"github.com/idursun/jjui/internal/ui/git"
 	"github.com/idursun/jjui/internal/ui/help"
-
 	"github.com/idursun/jjui/internal/ui/input"
+	"github.com/idursun/jjui/internal/ui/intents"
+	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/operations/target_picker"
 	"github.com/idursun/jjui/internal/ui/oplog"
+	"github.com/idursun/jjui/internal/ui/password"
 	"github.com/idursun/jjui/internal/ui/redo"
+	"github.com/idursun/jjui/internal/ui/render"
 	"github.com/idursun/jjui/internal/ui/revisions"
 	"github.com/idursun/jjui/internal/ui/revset"
 	"github.com/idursun/jjui/internal/ui/split"
 	"github.com/idursun/jjui/internal/ui/status"
+	"github.com/idursun/jjui/internal/ui/theme"
 	"github.com/idursun/jjui/internal/ui/undo"
 )
 
@@ -1038,15 +1037,15 @@ func (m *Model) applyTerminalBackground(background string, isDark bool) tea.Cmd 
 }
 
 func (m *Model) reloadActiveTheme() tea.Cmd {
-	theme, err := m.resolveActiveTheme()
+	resolvedTheme, err := m.resolveActiveTheme()
 	if err != nil {
 		log.Printf("failed to resolve theme: %v", err)
 		return nil
 	}
-	m.context.ThemeBackgroundBlend = theme.BackgroundBlend
-	common.DefaultPalette.Update(theme.Colors)
-	common.DefaultPalette.ConfigureBackgroundBlend(
-		theme.BackgroundBlend,
+	m.context.ThemeBackgroundBlend = resolvedTheme.BackgroundBlend
+	theme.DefaultPalette.Update(resolvedTheme.Colors)
+	theme.DefaultPalette.ConfigureBackgroundBlend(
+		resolvedTheme.BackgroundBlend,
 		m.context.TerminalBackground,
 		m.context.TerminalPalette,
 	)
@@ -1054,11 +1053,11 @@ func (m *Model) reloadActiveTheme() tea.Cmd {
 }
 
 func (m *Model) resolveActiveTheme() (config.ResolvedTheme, error) {
-	theme, err := config.ResolveTheme(m.context.TerminalHasDarkBackground, m.context.JJConfig.GetApplicableColors())
+	resolvedTheme, err := config.ResolveTheme(m.context.TerminalHasDarkBackground, m.context.JJConfig.GetApplicableColors())
 	if err != nil {
 		return config.ResolvedTheme{}, err
 	}
-	return theme, nil
+	return resolvedTheme, nil
 }
 
 func New(c *context.MainContext) tea.Model {

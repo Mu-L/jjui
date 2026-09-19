@@ -12,6 +12,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 var (
@@ -231,12 +232,12 @@ func (m *Model) applyFilter() {
 }
 
 func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
-	borderStyle := common.DefaultPalette.GetBorder("help", "", "border", false, lipgloss.NormalBorder()).Padding(0)
-	titleStyle := common.DefaultPalette.Get("help", "", "title", false)
+	borderStyle := theme.DefaultPalette.GetBorder("help", "", "border", false, lipgloss.NormalBorder()).Padding(0)
+	titleStyle := theme.DefaultPalette.Get("help", "", "title", false)
 	headingStyle := titleStyle
-	shortcutStyle := common.DefaultPalette.Get("help", "", "shortcut", false)
-	dimmedStyle := common.DefaultPalette.Get("help", "", "dimmed", false)
-	descStyle := common.DefaultPalette.Get("help", "", "desc", false).Inherit(dimmedStyle)
+	shortcutStyle := theme.DefaultPalette.Get("help", "", "shortcut", false)
+	dimmedStyle := theme.DefaultPalette.Get("help", "", "dimmed", false)
+	descStyle := theme.DefaultPalette.Get("help", "", "desc", false).Inherit(dimmedStyle)
 
 	inputStyles := m.input.Styles()
 	inputStyles.Focused.Text = shortcutStyle

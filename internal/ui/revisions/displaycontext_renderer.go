@@ -8,10 +8,10 @@ import (
 	"github.com/idursun/jjui/internal/jj"
 	"github.com/idursun/jjui/internal/parser"
 	"github.com/idursun/jjui/internal/screen"
-	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/operations"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 // DisplayContextRenderer renders the revisions list using the DisplayContext approach
@@ -121,7 +121,7 @@ func (r *DisplayContextRenderer) Render(
 		return
 	}
 
-	r.contrast = common.DefaultPalette.NewForegroundContrast()
+	r.contrast = render.NewForegroundContrast(theme.DefaultPalette.ResolveRGB)
 
 	// Measure function - calculates height for each item
 	measure := func(index int) int {

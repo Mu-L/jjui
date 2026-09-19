@@ -13,7 +13,7 @@ import (
 	"github.com/alecthomas/chroma/v2/formatters"
 	"github.com/alecthomas/chroma/v2/lexers"
 	"github.com/idursun/jjui/internal/config"
-	"github.com/idursun/jjui/internal/ui/common"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 type sourceHighlighter struct {
@@ -42,10 +42,10 @@ func newSourceHighlighter(dark bool, terminalPalettes ...map[int]string) *source
 func syntaxStyle(dark bool, terminalPalette map[int]string) *chroma.Style {
 	// Custom themes replace the embedded theme, so supply syntax defaults here
 	// too, while allowing explicitly configured attributes to take precedence.
-	defaults := common.NewPalette()
-	theme, err := config.LoadEmbeddedTheme("default", dark)
+	defaults := theme.NewPalette()
+	resolvedTheme, err := config.LoadEmbeddedTheme("default", dark)
 	if err == nil {
-		defaults.Update(theme.Colors)
+		defaults.Update(resolvedTheme.Colors)
 	}
 	roles := map[chroma.TokenType][]string{
 		chroma.Text:          {"text"},
@@ -73,15 +73,15 @@ func syntaxStyle(dark bool, terminalPalette map[int]string) *chroma.Style {
 		// Resolve explicit syntax selectors before broad palette defaults, so an
 		// absent class style can inherit type even when syntax has a base style.
 		for _, role := range fallbacks {
-			style = style.Inherit(common.DefaultPalette.Get("", "", "syntax "+role, false))
+			style = style.Inherit(theme.DefaultPalette.Get("", "", "syntax "+role, false))
 		}
 		role := fallbacks[len(fallbacks)-1]
-		style = style.Inherit(common.DefaultPalette.Get("", "syntax", role, false))
+		style = style.Inherit(theme.DefaultPalette.Get("", "syntax", role, false))
 		for _, role := range fallbacks {
 			style = style.Inherit(defaults.Get("", "syntax", role, false))
 		}
 		if role == "text" {
-			style = style.Inherit(common.DefaultPalette.Get("annotation", "", "text", false))
+			style = style.Inherit(theme.DefaultPalette.Get("annotation", "", "text", false))
 		}
 		entry := chroma.StyleEntry{
 			NoInherit: true,
@@ -107,17 +107,11 @@ func syntaxStyle(dark bool, terminalPalette map[int]string) *chroma.Style {
 // Prefer the terminal's actual palette; RGBA supplies standard ANSI values when
 // the terminal has not reported a palette entry. NoColor must remain unset.
 func syntaxColour(value color.Color, terminalPalette map[int]string) chroma.Colour {
-	if value == nil {
+	rgb, ok := theme.ResolveRGBFallback(value, terminalPalette)
+	if !ok {
 		return 0
 	}
-	if _, unset := value.(lipgloss.NoColor); unset {
-		return 0
-	}
-	if hex, ok := common.ResolveTerminalColor(value, terminalPalette); ok && hex != "" {
-		return chroma.ParseColour(hex)
-	}
-	r, g, b, _ := value.RGBA()
-	return chroma.NewColour(uint8(r>>8), uint8(g>>8), uint8(b>>8))
+	return chroma.NewColour(rgb[0], rgb[1], rgb[2])
 }
 
 func (h *sourceHighlighter) render(path, source string) string {

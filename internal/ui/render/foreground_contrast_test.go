@@ -6,20 +6,20 @@ import (
 
 	"charm.land/lipgloss/v2"
 	uv "github.com/charmbracelet/ultraviolet"
-	"github.com/idursun/jjui/internal/ui/colorcontrast"
 	"github.com/idursun/jjui/internal/ui/layout"
+	"github.com/idursun/jjui/internal/ui/theme"
 	"github.com/stretchr/testify/assert"
 )
 
-func resolveTestRGB(c color.Color) (colorcontrast.RGB, bool) {
+func resolveTestRGB(c color.Color) (theme.RGB, bool) {
 	if c == nil {
-		return colorcontrast.RGB{}, false
+		return theme.RGB{}, false
 	}
 	if _, ok := c.(lipgloss.NoColor); ok {
-		return colorcontrast.RGB{}, false
+		return theme.RGB{}, false
 	}
 	r, g, b, _ := c.RGBA()
-	return colorcontrast.RGB{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8)}, true
+	return theme.RGB{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8)}, true
 }
 
 func TestForegroundContrastPreservesVisibleBackground(t *testing.T) {
@@ -52,7 +52,7 @@ func TestForegroundContrastPreservesVisibleBackground(t *testing.T) {
 				}
 				f, _ := resolveTestRGB(fg)
 				b, _ := resolveTestRGB(bg)
-				assert.GreaterOrEqual(t, colorcontrast.Ratio(f, b), colorcontrast.Minimum)
+				assert.GreaterOrEqual(t, theme.Ratio(f, b), theme.Minimum)
 			}
 		}
 	}

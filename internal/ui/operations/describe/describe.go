@@ -16,6 +16,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/operations"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 var (
@@ -203,7 +204,7 @@ func (o *Operation) openCancelConfirmation() tea.Cmd {
 			confirmation.Close,
 			key.NewBinding(key.WithKeys("n", "esc"), key.WithHelp("n/esc", "keep editing"))),
 	)
-	background := common.DefaultPalette.GetBlended("revisions", "", "", true).GetBackground()
+	background := theme.DefaultPalette.GetBlended("revisions", "", "", true).GetBackground()
 	o.confirmation.Styles.Border = o.confirmation.Styles.Border.
 		Background(background).
 		BorderBackground(background)
@@ -236,7 +237,7 @@ func (o *Operation) ViewRect(dl *render.DisplayContext, box layout.Box) {
 	o.input = o.resizeInput(box.R.Dx(), max(box.R.Dy()-confirmationHeight, 0))
 	input := o.input
 
-	selectedStyle := common.DefaultPalette.GetBlended("revisions", "", "", true)
+	selectedStyle := theme.DefaultPalette.GetBlended("revisions", "", "", true)
 	ds := input.Styles()
 	ds.Focused.Base = selectedStyle.Underline(false).Strikethrough(false).Reverse(false).Blink(false)
 	ds.Focused.CursorLine = ds.Focused.Base

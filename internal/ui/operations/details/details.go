@@ -19,6 +19,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/operations"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 type updateCommitStatusMsg struct {
@@ -345,7 +346,7 @@ func (s *Operation) selectedFile(file jj.FileName) context.SelectedFile {
 }
 
 func (s *Operation) ViewRect(dl *render.DisplayContext, box layout.Box) {
-	textStyle := common.DefaultPalette.Get("revisions", "details", "text", false)
+	textStyle := theme.DefaultPalette.Get("revisions", "details", "text", false)
 	background := lipgloss.NewStyle().Background(textStyle.GetBackground())
 	dl.AddFill(box.R, ' ', background, 0)
 	s.renderIntoRect(dl, box.R)
@@ -413,7 +414,7 @@ func (s *Operation) renderIntoRect(dl *render.DisplayContext, rect layout.Rectan
 
 	if listHeight > 0 {
 		if visibleLen == 0 {
-			dimmedStyle := common.DefaultPalette.Get("revisions", "details", "dimmed", false)
+			dimmedStyle := theme.DefaultPalette.Get("revisions", "details", "dimmed", false)
 			message := "No matching files"
 			if s.Len() == 0 {
 				message = "No changes"
@@ -436,8 +437,8 @@ func (s *Operation) renderIntoRect(dl *render.DisplayContext, rect layout.Rectan
 }
 
 func (s *Operation) renderFilterInput(dl *render.DisplayContext, rect layout.Rectangle) {
-	textStyle := common.DefaultPalette.Get("revisions", "details", "text", false)
-	dimmedStyle := common.DefaultPalette.Get("revisions", "details", "dimmed", false)
+	textStyle := theme.DefaultPalette.Get("revisions", "details", "text", false)
+	dimmedStyle := theme.DefaultPalette.Get("revisions", "details", "dimmed", false)
 	styles := s.filterInput.Styles()
 	styles.Focused.Prompt = dimmedStyle
 	styles.Focused.Text = textStyle

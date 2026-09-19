@@ -16,6 +16,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/operations"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -179,13 +180,13 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 		return
 	}
 
-	contrast := common.DefaultPalette.NewForegroundContrast()
-	bookmarkPillStyle := common.DefaultPalette.Get("picker", "", "bookmark", false)
-	selectedStyle := common.DefaultPalette.GetBlended("picker", "", "", true)
-	selectedTextStyle := common.DefaultPalette.GetBlended("picker", "", "text", true)
-	borderStyle := common.DefaultPalette.GetBorder("picker", "", "border", false, lipgloss.NormalBorder())
-	textStyle := common.DefaultPalette.Get("picker", "", "text", false)
-	dimmedStyle := common.DefaultPalette.Get("picker", "", "dimmed", false)
+	contrast := render.NewForegroundContrast(theme.DefaultPalette.ResolveRGB)
+	bookmarkPillStyle := theme.DefaultPalette.Get("picker", "", "bookmark", false)
+	selectedStyle := theme.DefaultPalette.GetBlended("picker", "", "", true)
+	selectedTextStyle := theme.DefaultPalette.GetBlended("picker", "", "text", true)
+	borderStyle := theme.DefaultPalette.GetBorder("picker", "", "border", false, lipgloss.NormalBorder())
+	textStyle := theme.DefaultPalette.Get("picker", "", "text", false)
+	dimmedStyle := theme.DefaultPalette.Get("picker", "", "dimmed", false)
 
 	maxW := min(maxWidth, box.R.Dx())
 	maxH := min(maxHeight, box.R.Dy())
@@ -226,9 +227,9 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 			y := rect.Min.Y
 
 			isSelected := index == m.cursor
-			getStyle := common.DefaultPalette.Get
+			getStyle := theme.DefaultPalette.Get
 			if isSelected {
-				getStyle = common.DefaultPalette.GetBlended
+				getStyle = theme.DefaultPalette.GetBlended
 			}
 			pillStyle := getStyle("picker", "", "dimmed", isSelected)
 			lineStyle := bookmarkPillStyle

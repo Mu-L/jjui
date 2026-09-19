@@ -16,6 +16,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 type updateItemsMsg struct {
@@ -492,11 +493,11 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 		return
 	}
 
-	menuTitleStyle := common.DefaultPalette.Get("bookmarks", "", "title", false)
-	menuTextStyle := common.DefaultPalette.Get("bookmarks", "", "text", false)
-	inputTextStyle := common.DefaultPalette.Get("bookmarks", "input", "text", false)
-	inputMatchedStyle := common.DefaultPalette.Get("bookmarks", "input", "matched", false)
-	borderStyle := common.DefaultPalette.GetBorder("bookmarks", "", "border", false, lipgloss.NormalBorder())
+	menuTitleStyle := theme.DefaultPalette.Get("bookmarks", "", "title", false)
+	menuTextStyle := theme.DefaultPalette.Get("bookmarks", "", "text", false)
+	inputTextStyle := theme.DefaultPalette.Get("bookmarks", "input", "text", false)
+	inputMatchedStyle := theme.DefaultPalette.Get("bookmarks", "input", "matched", false)
+	borderStyle := theme.DefaultPalette.GetBorder("bookmarks", "", "border", false, lipgloss.NormalBorder())
 
 	dl.AddBackdrop(box.R, render.ZMenuBorder-1)
 	contentBox := frame.Inset(1)
@@ -543,11 +544,11 @@ func (m *Model) renderRemotes(dl *render.DisplayContext, lineBox layout.Box) {
 		return
 	}
 
-	remotePromptStyle := common.DefaultPalette.Get("bookmarks", "remote", "title", false)
-	remoteTextStyle := common.DefaultPalette.Get("bookmarks", "remote", "text", false)
-	remoteDimmedStyle := common.DefaultPalette.Get("bookmarks", "remote", "dimmed", false)
-	remoteSelectedStyle := common.DefaultPalette.GetBlended("bookmarks", "remote", "", true)
-	noRemoteStyle := common.DefaultPalette.Get("bookmarks", "remote", "error", false)
+	remotePromptStyle := theme.DefaultPalette.Get("bookmarks", "remote", "title", false)
+	remoteTextStyle := theme.DefaultPalette.Get("bookmarks", "remote", "text", false)
+	remoteDimmedStyle := theme.DefaultPalette.Get("bookmarks", "remote", "dimmed", false)
+	remoteSelectedStyle := theme.DefaultPalette.GetBlended("bookmarks", "remote", "", true)
+	noRemoteStyle := theme.DefaultPalette.Get("bookmarks", "remote", "error", false)
 
 	dl.AddFill(lineBox.R, ' ', remoteTextStyle, render.ZMenuContent)
 
@@ -753,8 +754,8 @@ func (m *Model) renderFilterView(dl *render.DisplayContext, box layout.Box) {
 		return
 	}
 	width := box.R.Dx()
-	menuTextStyle := common.DefaultPalette.Get("bookmarks", "", "text", false)
-	menuMatchedStyle := common.DefaultPalette.Get("bookmarks", "", "matched", false)
+	menuTextStyle := theme.DefaultPalette.Get("bookmarks", "", "text", false)
+	menuMatchedStyle := theme.DefaultPalette.Get("bookmarks", "", "matched", false)
 	labelStyle := menuTextStyle.PaddingLeft(1).PaddingRight(1)
 	valueStyle := menuMatchedStyle
 
@@ -844,9 +845,9 @@ func renderItem(dl *render.DisplayContext, rect layout.Rectangle, width int, sho
 	}
 
 	isSelected := index == cursor
-	getStyle := common.DefaultPalette.Get
+	getStyle := theme.DefaultPalette.Get
 	if isSelected {
-		getStyle = common.DefaultPalette.GetBlended
+		getStyle = theme.DefaultPalette.GetBlended
 	}
 	textStyle := getStyle("bookmarks", "", "text", isSelected)
 	descStyle := getStyle("bookmarks", "", "dimmed", isSelected)

@@ -12,6 +12,7 @@ import (
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 type SelectedMsg struct {
@@ -63,8 +64,8 @@ func NewWithOptions(options []string, title string, ordered bool) *Model {
 	ti := textinput.New()
 	ti.Prompt = "filter: "
 	is := ti.Styles()
-	is.Focused.Prompt = common.DefaultPalette.Get("help", "", "shortcut", false)
-	is.Blurred.Prompt = common.DefaultPalette.Get("help", "", "shortcut", false)
+	is.Focused.Prompt = theme.DefaultPalette.Get("help", "", "shortcut", false)
+	is.Blurred.Prompt = theme.DefaultPalette.Get("help", "", "shortcut", false)
 	ti.SetStyles(is)
 	ti.Placeholder = ""
 	ti.CharLimit = 100
@@ -238,13 +239,13 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 		m.listRenderer = render.NewListRenderer(itemScrollMsg{})
 	}
 
-	contrast := common.DefaultPalette.NewForegroundContrast()
-	borderStyle := common.DefaultPalette.GetBorder("choose", "", "border", false, lipgloss.RoundedBorder())
-	surfaceStyle := common.DefaultPalette.Get("choose", "", "", false)
-	textStyle := common.DefaultPalette.Get("choose", "", "text", false)
-	titleStyle := common.DefaultPalette.Get("choose", "", "title", false)
-	selectedStyle := common.DefaultPalette.GetBlended("choose", "", "", true)
-	inputStyle := common.DefaultPalette.Get("choose", "", "input", false)
+	contrast := render.NewForegroundContrast(theme.DefaultPalette.ResolveRGB)
+	borderStyle := theme.DefaultPalette.GetBorder("choose", "", "border", false, lipgloss.RoundedBorder())
+	surfaceStyle := theme.DefaultPalette.Get("choose", "", "", false)
+	textStyle := theme.DefaultPalette.Get("choose", "", "text", false)
+	titleStyle := theme.DefaultPalette.Get("choose", "", "title", false)
+	selectedStyle := theme.DefaultPalette.GetBlended("choose", "", "", true)
+	inputStyle := theme.DefaultPalette.Get("choose", "", "input", false)
 
 	inputStyles := m.input.Styles()
 	inputStyles.Focused.Text = inputStyle

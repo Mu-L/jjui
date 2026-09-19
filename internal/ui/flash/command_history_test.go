@@ -7,10 +7,10 @@ import (
 
 	uv "github.com/charmbracelet/ultraviolet"
 	"github.com/idursun/jjui/internal/config"
-	"github.com/idursun/jjui/internal/ui/common"
 	"github.com/idursun/jjui/internal/ui/intents"
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/render"
+	"github.com/idursun/jjui/internal/ui/theme"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -129,15 +129,15 @@ func TestCommandHistory_DeleteSelectedRemovesFromSourceAndLiveMessages(t *testin
 }
 
 func TestCommandHistory_ViewFillsHistoryCardsBackground(t *testing.T) {
-	originalPalette := common.DefaultPalette
-	palette := common.NewPalette()
+	originalPalette := theme.DefaultPalette
+	palette := theme.NewPalette()
 	palette.Update(map[string]config.Color{
 		"flash text":    {Fg: "#ffffff", Bg: "#112244"},
 		"flash success": {Fg: "#eafff2", Bg: "#1b5f46"},
 		"flash matched": {Fg: "#ffee88", Bg: "#112244"},
 	})
-	common.DefaultPalette = palette
-	defer func() { common.DefaultPalette = originalPalette }()
+	theme.DefaultPalette = palette
+	defer func() { theme.DefaultPalette = originalPalette }()
 
 	source := New()
 	source.AddWithCommand("older-output", "jj older", nil)
