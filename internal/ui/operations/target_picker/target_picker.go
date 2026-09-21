@@ -180,7 +180,6 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 		return
 	}
 
-	contrast := render.NewForegroundContrast(theme.DefaultPalette.ResolveRGB)
 	bookmarkPillStyle := theme.DefaultPalette.Get("picker", "", "bookmark", false)
 	selectedStyle := theme.DefaultPalette.GetBlended("picker", "", "", true)
 	selectedTextStyle := theme.DefaultPalette.GetBlended("picker", "", "text", true)
@@ -247,9 +246,6 @@ func (m *Model) ViewRect(dl *render.DisplayContext, box layout.Box) {
 			nameContent := fuzzy_search.HighlightMatched(item.Name, match, lineStyle, matchStyle)
 			nameX := rect.Min.X + pillWidth + 1
 			nameWidth := min(lipgloss.Width(nameContent), rect.Dx()-pillWidth-1)
-			if isSelected {
-				contrast.Add(dl, rect, render.ZMenuContent+1)
-			}
 			if nameWidth > 0 {
 				nameRect := layout.Rect(nameX, y, nameWidth, 1)
 				dl.AddDraw(nameRect, nameContent, render.ZMenuContent)

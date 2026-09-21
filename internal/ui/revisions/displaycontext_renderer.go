@@ -11,7 +11,6 @@ import (
 	"github.com/idursun/jjui/internal/ui/layout"
 	"github.com/idursun/jjui/internal/ui/operations"
 	"github.com/idursun/jjui/internal/ui/render"
-	"github.com/idursun/jjui/internal/ui/theme"
 )
 
 // DisplayContextRenderer renders the revisions list using the DisplayContext approach
@@ -23,7 +22,6 @@ type DisplayContextRenderer struct {
 	selectedStyle  lipgloss.Style
 	matchedStyle   lipgloss.Style
 	selectionFocus bool
-	contrast       *render.ForegroundContrast
 }
 
 // itemRenderer is a helper for rendering individual revision items
@@ -120,8 +118,6 @@ func (r *DisplayContextRenderer) Render(
 	if len(items) == 0 {
 		return
 	}
-
-	r.contrast = render.NewForegroundContrast(theme.DefaultPalette.ResolveRGB)
 
 	// Measure function - calculates height for each item
 	measure := func(index int) int {
@@ -386,7 +382,6 @@ func (r *DisplayContextRenderer) renderItemToDisplayContext(
 			contentRect, extended, gutterWidth := r.itemContentRect(item, rect, y)
 			if height, rendered := r.renderDescriptionOverlay(dl, operation, item, line.Gutter, contentRect, extended, gutterWidth); rendered {
 				dl.AddHighlight(layout.Rect(rect.Min.X, y, rect.Dx(), height), r.selectedStyle, 1)
-				r.contrast.Add(dl, layout.Rect(rect.Min.X, y, rect.Dx(), height), 2)
 
 				// Render gutters for each line
 				for j := range height {
@@ -423,7 +418,6 @@ func (r *DisplayContextRenderer) renderItemToDisplayContext(
 		dl.AddFill(lineRect, ' ', fillStyle, 0)
 		if isSelected && line.Flags&parser.Highlightable == parser.Highlightable {
 			dl.AddHighlight(lineRect, r.selectedStyle, 1)
-			r.contrast.Add(dl, lineRect, 2)
 		}
 		tb := dl.Text(lineRect.Min.X, lineRect.Min.Y, 0)
 		ir.renderLine(tb, line, lineRect.Min.X, lineRect.Min.Y)
@@ -437,7 +431,6 @@ func (r *DisplayContextRenderer) renderItemToDisplayContext(
 		contentRect, extended, gutterWidth := r.itemContentRect(item, rect, y)
 		if height, rendered := r.renderDescriptionOverlay(dl, operation, item, extended, contentRect, extended, gutterWidth); rendered {
 			dl.AddHighlight(layout.Rect(rect.Min.X, y, rect.Dx(), height), r.selectedStyle, 1)
-			r.contrast.Add(dl, layout.Rect(rect.Min.X, y, rect.Dx(), height), 2)
 
 			// Render gutters for each line
 			for j := range height {

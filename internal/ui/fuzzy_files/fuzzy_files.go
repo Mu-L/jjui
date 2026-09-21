@@ -215,12 +215,6 @@ func (fzf *fuzzyFiles) ViewRect(dl *render.DisplayContext, box layout.Box) {
 	dl.AddFill(rect, ' ', background, render.ZFuzzyOverlay)
 	dl.AddDraw(rect, content, render.ZFuzzyOverlay)
 	dl.AddHighlight(rect, background, render.ZFuzzyOverlay)
-	// Results are drawn in reverse order beneath the title.
-	shown := min(len(fzf.matches), fzf.max)
-	if fzf.cursor >= 0 && fzf.cursor < shown {
-		selected := layout.Rect(rect.Min.X, rect.Max.Y-1-fzf.cursor, rect.Dx(), 1).Intersect(box.R)
-		render.NewForegroundContrast(theme.DefaultPalette.ResolveRGB).Add(dl, selected, render.ZFuzzyOverlay+1)
-	}
 }
 
 func (fzf *fuzzyFiles) viewContent() string {
