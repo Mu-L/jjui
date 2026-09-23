@@ -68,9 +68,10 @@ func (m *Model) Scopes() []common.Scope {
 	if !m.editing {
 		return []common.Scope{
 			{
-				Name:    actions.ScopeRevset,
-				Leak:    common.LeakAll,
-				Handler: m,
+				Name:         actions.ScopeRevset,
+				Leak:         common.LeakAll,
+				HideFromHelp: true,
+				Handler:      m,
 			},
 		}
 	}

@@ -371,7 +371,7 @@ func (m *Model) Sync(scopes []common.Scope, sequenceHelp []help.Entry) {
 func (m *Model) setHelpFromScopes(scopes []common.Scope) {
 	var scopeNames []keybindings.ScopeName
 	for _, scope := range common.VisibleScopes(scopes) {
-		if scope.Name != "" {
+		if scope.Name != "" && !scope.HideFromHelp {
 			scopeNames = append(scopeNames, scope.Name)
 		}
 	}
