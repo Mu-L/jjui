@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/idursun/jjui/internal/config"
+	"github.com/idursun/jjui/internal/ui/actionmeta"
 	"github.com/idursun/jjui/internal/ui/actions"
 	keybindings "github.com/idursun/jjui/internal/ui/bindings"
 	"github.com/idursun/jjui/internal/ui/common"
@@ -44,6 +45,7 @@ type Model struct {
 	fuzzy           fuzzy_search.Model
 	statusExpanded  bool
 	statusTruncated bool
+	conditionCache  map[string]actionmeta.Condition
 }
 
 // ViewRect renders the currently active footer row. The root UI uses the more
@@ -373,9 +375,42 @@ func (m *Model) setHelpFromScopes(scopes []common.Scope) {
 			scopeNames = append(scopeNames, scope.Name)
 		}
 	}
-	groups := help.BuildGroupedFromBindings(scopeNames, config.Current.Bindings)
+	visible := make(map[string]bool, len(scopeNames))
+	for _, scope := range scopeNames {
+		visible[string(scope)] = true
+	}
+	if m.conditionCache == nil {
+		m.conditionCache = make(map[string]actionmeta.Condition)
+	}
+	visibleBindings := make([]config.BindingConfig, 0, len(config.Current.Bindings))
+	for _, binding := range config.Current.Bindings {
+		if visible[strings.TrimSpace(binding.Scope)] {
+			visibleBindings = append(visibleBindings, binding)
+		}
+	}
+	groups := help.BuildGroupedFromBindingsWithAvailability(scopeNames, visibleBindings, func(binding config.BindingConfig) bool {
+		actionCondition, valid := m.condition(config.Current.ActionWhen(binding.Action))
+		if !valid || !actionCondition.Matches(m.context) {
+			return false
+		}
+		condition, valid := m.condition(binding.When)
+		return valid && condition.Matches(m.context)
+	})
 	help.MarkOverriddenKeys(groups)
 	m.setGroups(groups)
+}
+
+func (m *Model) condition(source string) (actionmeta.Condition, bool) {
+	condition, ok := m.conditionCache[source]
+	if ok {
+		return condition, true
+	}
+	condition, err := actionmeta.ParseCondition(source)
+	if err != nil {
+		return actionmeta.Condition{}, false
+	}
+	m.conditionCache[source] = condition
+	return condition, true
 }
 
 func (m *Model) setModeFromScopes(scopes []common.Scope) {
@@ -512,7 +547,7 @@ func (m *Model) collectGroupEntries(entries []help.Entry, shortcutStyle, dimmedS
 			continue
 		}
 		var e string
-		if entry.Overridden {
+		if entry.Overridden || entry.Disabled {
 			e = dimmedStyle.Strikethrough(true).Render(entry.Label + " " + entry.Desc)
 		} else {
 			e = shortcutStyle.Render(entry.Label) + dimmedStyle.PaddingLeft(1).Render(entry.Desc)
@@ -573,7 +608,7 @@ func (m *Model) groupedHelpView(groups []help.ScopeGroup, maxWidth int, shortcut
 	for gi, group := range groups {
 		firstInGroup := true
 		for ei, entry := range group.Entries {
-			if entry.Label == "" || entry.Desc == "" || entry.Overridden {
+			if entry.Label == "" || entry.Desc == "" || entry.Overridden || entry.Disabled {
 				continue
 			}
 

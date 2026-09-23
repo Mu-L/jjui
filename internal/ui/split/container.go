@@ -127,6 +127,16 @@ func (sc *SplitContainer) Resize(delta float64) {
 	}
 }
 
+func (sc *SplitContainer) CanResize(delta float64) bool {
+	if sc.activeContent() == nil || delta == 0 {
+		return false
+	}
+	if delta > 0 {
+		return sc.state.Percent < sc.state.MaxPercent
+	}
+	return sc.state.Percent > sc.state.MinPercent
+}
+
 func (sc *SplitContainer) TogglePosition() {
 	sc.state.TogglePosition()
 }

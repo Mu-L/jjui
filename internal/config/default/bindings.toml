@@ -1,3 +1,4 @@
+# Action availability conditions are declared with the action metadata.
 bindings = [
     # ui
     { key = "esc", action = "ui.cancel", scope = "ui", desc = "cancel" },

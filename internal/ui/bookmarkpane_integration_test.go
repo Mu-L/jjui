@@ -71,8 +71,8 @@ func Test_BookmarkPaneShortcutsDoNotShadowRevisionsWhenRevisionsFocused(t *testi
 	require.False(t, bookmarkPaneFocused(model))
 	require.True(t, model.revisions.IsFocused())
 
-	result := model.resolver.ResolveKey(tea.KeyPressMsg{Text: "r", Code: 'r'}, model.dispatchScopes())
-	_, ok := result.Intent.(intents.OpenRebase)
+	result := model.resolver.ResolveKey(tea.KeyPressMsg{Text: "p", Code: 'p'}, model.dispatchScopes())
+	_, ok := result.Intent.(intents.PreviewToggle)
 	assert.True(t, ok, "revision shortcuts should win while revisions are focused")
 }
 

@@ -43,6 +43,16 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+func TestQueryStateKeepsUnknownPreviewPropertiesUnavailable(t *testing.T) {
+	model := Model{}
+	if _, ok := model.QueryState("ui.preview.typo"); ok {
+		t.Fatal("unknown preview property was reported as available")
+	}
+	if value, ok := model.QueryState("ui.preview.can_expand"); !ok || value != false {
+		t.Fatalf("recognized preview property without an open preview = (%v, %v), want (false, true)", value, ok)
+	}
+}
+
 func showPreview(t *testing.T, model *Model, content string) {
 	t.Helper()
 	_, handled := model.HandleIntent(intents.PreviewShow{Content: content})
@@ -722,7 +732,7 @@ func Test_UpdateStatus_UsesBindingDeclarationOrderForRevisions(t *testing.T) {
 	config.Current.Bindings = []config.BindingConfig{
 		{Action: "revisions.move_down", Scope: "revisions", Key: config.StringList{"j"}},
 		{Action: "revisions.move_up", Scope: "revisions", Key: config.StringList{"k"}},
-		{Action: "revisions.open_rebase", Scope: "revisions", Key: config.StringList{"r"}},
+		{Action: "revisions.refresh", Scope: "revisions", Key: config.StringList{"r"}},
 		{Action: "ui.cancel", Scope: "ui", Key: config.StringList{"esc"}},
 	}
 
@@ -1249,7 +1259,7 @@ func Test_Update_OperationScopedConfiguredActionOverridesBuiltInIntent(t *testin
 		config.Current.Actions = origActions
 	}()
 	config.Current.Actions = []config.ActionConfig{
-		{Name: "revisions.details.diff", Lua: `flash("override")`},
+		{Name: "revisions.details.refresh", Lua: `flash("override")`},
 	}
 
 	commandRunner := test.NewTestCommandRunner(t)
@@ -1262,7 +1272,7 @@ func Test_Update_OperationScopedConfiguredActionOverridesBuiltInIntent(t *testin
 	model.Update(common.RestoreOperationMsg{Operation: op})
 	require.False(t, model.revisions.InNormalMode(), "details operation should be active")
 
-	cmd := model.Update(common.DispatchActionMsg{Action: "revisions.details.diff"})
+	cmd := model.Update(common.DispatchActionMsg{Action: "revisions.details.refresh"})
 	require.NotNil(t, cmd)
 	msg := cmd()
 	runLua, ok := msg.(common.RunLuaScriptMsg)

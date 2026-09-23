@@ -107,10 +107,31 @@ func (m *Model) Selection() common.SelectionSnapshot {
 	return m.selectionSnapshot()
 }
 
-// QueryState resolves public Lua state paths against retained model owners.
+// QueryState resolves public binding and Lua state paths against retained model owners.
 // Focus and visibility do not participate in lookup; owners decide whether a
 // model is still live and can answer the local property.
 func (m *Model) QueryState(name string) (any, bool) {
+	if strings.HasPrefix(name, "ui.preview.") {
+		switch strings.TrimPrefix(name, "ui.preview.") {
+		case "can_expand":
+			if m.splitContainer == nil {
+				return false, true
+			}
+			return m.splitContainer.CanResize(config.Current.Preview.WidthIncrementPercentage), true
+		case "can_shrink":
+			if m.splitContainer == nil {
+				return false, true
+			}
+			return m.splitContainer.CanResize(-config.Current.Preview.WidthIncrementPercentage), true
+		}
+	}
+	if strings.HasPrefix(name, "annotation.") && m.annotation != nil {
+		return m.annotation.QueryState(strings.TrimPrefix(name, "annotation."))
+	}
+	if strings.HasPrefix(name, "bookmark_pane.") && m.splitContainer != nil {
+		return m.splitContainer.QueryState(bookmarkContentID, strings.TrimPrefix(name, "bookmark_pane."))
+	}
+
 	if strings.HasPrefix(name, "revisions.") && m.revisions != nil {
 		return m.revisions.QueryState(strings.TrimPrefix(name, "revisions."))
 	}
@@ -476,6 +497,12 @@ func (m *Model) Update(msg tea.Msg) (cmd tea.Cmd) {
 }
 
 func (m *Model) updateStatus() {
+	if m.sequenceHelp != nil && m.resolver != nil {
+		m.sequenceHelp = help.BuildFromContinuations(m.resolver.Continuations(m.dispatchScopes()))
+		if m.sequenceHelp == nil {
+			m.sequenceHelp = []help.Entry{}
+		}
+	}
 	m.status.Sync(m.dispatchScopes(), m.sequenceHelp)
 }
 
@@ -995,6 +1022,7 @@ func (m *Model) initResolver() {
 	if err != nil {
 		return
 	}
+	dispatcher.SetStateProvider(m)
 	m.resolver = dispatch.NewResolver(dispatcher)
 }
 

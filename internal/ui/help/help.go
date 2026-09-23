@@ -438,6 +438,7 @@ func bindingsToEntries(bindings []config.BindingConfig) []Entry {
 			desc = descFromAction(action)
 		}
 
+		desc = appendBindingConditions(desc, b)
 		key := action + "|" + desc
 		if seenActions[key] {
 			continue

@@ -477,6 +477,16 @@ func (s *Operation) clearFilter() {
 	s.setFilter("", false)
 }
 
+func (s *Operation) QueryState(name string) (any, bool) {
+	switch name {
+	case "has_file":
+		return s.current() != nil, true
+	case "has_selection":
+		return len(s.getSelectedFiles(true)) > 0, true
+	}
+	return nil, false
+}
+
 func (s *Operation) Name() string {
 	return "details"
 }

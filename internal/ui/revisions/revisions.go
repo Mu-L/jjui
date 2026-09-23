@@ -175,6 +175,46 @@ func (m *Model) activeModel() common.ImmediateModel {
 // back to the base operation. It deliberately ignores focus and visibility;
 // a state owner remains queryable until its layer is popped or replaced.
 func (m *Model) QueryState(name string) (any, bool) {
+	selected := m.SelectedRevision()
+	switch name {
+	case "has_revision":
+		return selected != nil, true
+	case "has_selection":
+		return len(m.SelectedRevisions().Revisions) > 0, true
+	case "has_checked":
+		return len(m.checkedRevisions) > 0, true
+	case "is_root":
+		return selected != nil && selected.IsRoot(), true
+	case "has_parent":
+		selectedRevisions := m.SelectedRevisions().Revisions
+		if len(selectedRevisions) == 0 {
+			return false, true
+		}
+		for _, revision := range selectedRevisions {
+			if revision.IsRoot() {
+				return false, true
+			}
+		}
+		return true, true
+	case "is_empty":
+		return selected != nil && selected.IsEmpty, true
+	case "is_working_copy":
+		return selected != nil && selected.IsWorkingCopy, true
+	case "working_copy_has_changes":
+		for _, row := range m.rows {
+			if row.Commit != nil && row.Commit.IsWorkingCopy {
+				return !row.Commit.IsEmpty, true
+			}
+		}
+		return false, true
+	case "has_bookmarks":
+		return selected != nil && selected.HasBookmarks, true
+	case "has_local_bookmarks":
+		return selected != nil && selected.HasLocalBookmarks, true
+	case "has_workspace":
+		return selected != nil && (selected.HasWorkspace || selected.IsWorkingCopy), true
+	}
+
 	module, property, ok := strings.Cut(name, ".")
 	if !ok {
 		return nil, false

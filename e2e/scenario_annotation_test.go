@@ -17,11 +17,30 @@ func Test_Annotation_CreateEditDeleteAndCopy(t *testing.T) {
 	h := NewHarness(t)
 	h.repo.Write("review.go", "first line\nsecond line\nthird line\n").Commit("review target")
 	openAnnotation(t, h, "review target", "review.go")
+	h.Text("?")
+	if _, err := h.session.WaitForStableScreen(h.ctx, 3, func(screen []string) bool {
+		return statusHasEntry(screen, "c", "comment") &&
+			statusHasEntry(screen, "x", "delete comment") &&
+			statusHasEntry(screen, "y", "copy annotations") &&
+			statusHasEntry(screen, "shift+x", "clear comments")
+	}); err != nil {
+		t.Fatalf("expanded help did not show unavailable annotation actions for an empty comment state: %v", err)
+	}
+	h.Key("Escape")
 	h.Key("J") // Select the first two added lines.
 	addReviewComment(t, h, "check both lines")
 	screen := h.WaitText("comment: check both lines")
 	assertCommentAfter(t, screen, "second line", "comment: check both lines")
 	h.WaitText("1 annotations")
+	h.Text("?")
+	if _, err := h.session.WaitForStableScreen(h.ctx, 3, func(screen []string) bool {
+		return statusHasEntry(screen, "x", "delete comment") &&
+			statusHasEntry(screen, "y", "copy annotations") &&
+			statusHasEntry(screen, "shift+x", "clear comments")
+	}); err != nil {
+		t.Fatalf("annotation actions did not appear after adding a comment: %v", err)
+	}
+	h.Key("Escape")
 
 	h.Key("c")
 	h.WaitText("alt+enter")
@@ -39,6 +58,15 @@ func Test_Annotation_CreateEditDeleteAndCopy(t *testing.T) {
 	}
 	h.Key("x")
 	h.WaitText("0 annotations")
+	h.Text("?")
+	if _, err := h.session.WaitForStableScreen(h.ctx, 3, func(screen []string) bool {
+		return statusHasEntry(screen, "x", "delete comment") &&
+			statusHasEntry(screen, "y", "copy annotations") &&
+			statusHasEntry(screen, "shift+x", "clear comments")
+	}); err != nil {
+		t.Fatalf("expanded help did not show unavailable annotation actions after deleting the last comment: %v", err)
+	}
+	h.Key("Escape")
 	h.WaitNoText("comment: check both lines")
 	closeAnnotation(t, h)
 }

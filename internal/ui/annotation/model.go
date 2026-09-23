@@ -148,6 +148,18 @@ func (m *Model) Scopes() []common.Scope {
 	}}
 }
 
+func (m *Model) QueryState(name string) (any, bool) {
+	switch name {
+	case "can_annotate":
+		return len(m.annotationAtCursor()) > 0 || m.currentCommentable(), true
+	case "has_annotation_at_cursor":
+		return len(m.annotationAtCursor()) > 0, true
+	case "has_annotations":
+		return len(m.annotations.All()) > 0, true
+	}
+	return nil, false
+}
+
 func (m *Model) HandleIntent(intent intents.Intent) (tea.Cmd, bool) {
 	if m.confirmation != nil {
 		return m.confirmation.Update(intent), true

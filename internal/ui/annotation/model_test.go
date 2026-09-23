@@ -679,6 +679,30 @@ func TestAnnotationAtCursorDistinguishesMatchCount(t *testing.T) {
 	assert.Len(t, model.annotationAtCursor(), 2)
 }
 
+func TestQueryStateTracksAnnotationActionAvailability(t *testing.T) {
+	model := annotationTestModel()
+	for name, want := range map[string]bool{
+		"can_annotate":             true,
+		"has_annotation_at_cursor": false,
+		"has_annotations":          false,
+	} {
+		value, ok := model.QueryState(name)
+		assert.True(t, ok, name)
+		assert.Equal(t, want, value, name)
+	}
+	model.cursor = 1
+	model.addAnnotation(Annotation{ChangeID: "commit", File: "a.go", NewLines: lineRange{Start: 1, End: 2}, Comment: "note"})
+	for name, want := range map[string]bool{
+		"can_annotate":             true,
+		"has_annotation_at_cursor": true,
+		"has_annotations":          true,
+	} {
+		value, ok := model.QueryState(name)
+		assert.True(t, ok, name)
+		assert.Equal(t, want, value, name)
+	}
+}
+
 func TestAmbiguousAnnotationActionsOpenCommentPicker(t *testing.T) {
 	tests := []struct {
 		name   string

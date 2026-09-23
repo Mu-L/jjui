@@ -444,6 +444,39 @@ func TestModel_QueryStateReadsCoveredBaseAndTracksReplacement(t *testing.T) {
 	assert.False(t, ok)
 }
 
+func TestModel_QueryStateReportsParentAndContentState(t *testing.T) {
+	model := Model{rows: []parser.Row{{Commit: &jj.Commit{ChangeId: "revision", IsEmpty: true}}}}
+	for name, want := range map[string]bool{
+		"has_revision": true,
+		"has_parent":   true,
+		"is_root":      false,
+		"is_empty":     true,
+	} {
+		value, ok := model.QueryState(name)
+		assert.True(t, ok, name)
+		assert.Equal(t, want, value, name)
+	}
+	model.rows[0].Commit.Root = true
+	value, ok := model.QueryState("has_parent")
+	assert.True(t, ok)
+	assert.False(t, value.(bool))
+}
+
+func TestModel_QueryStateReportsWorkingCopyChangesIndependentOfSelection(t *testing.T) {
+	model := Model{rows: []parser.Row{
+		{Commit: &jj.Commit{ChangeId: "working-copy", IsWorkingCopy: true, IsEmpty: false}},
+		{Commit: &jj.Commit{ChangeId: "selected", IsEmpty: true}},
+	}, cursor: 1}
+	value, ok := model.QueryState("working_copy_has_changes")
+	assert.True(t, ok)
+	assert.True(t, value.(bool))
+
+	model.rows[0].Commit.IsEmpty = true
+	value, ok = model.QueryState("working_copy_has_changes")
+	assert.True(t, ok)
+	assert.False(t, value.(bool))
+}
+
 func TestModel_ViewRectEmbeddedBaseOperationDoesNotRegisterViewportClicks(t *testing.T) {
 	ctx := test.NewTestContext(test.NewTestCommandRunner(t))
 	model := New(ctx)
